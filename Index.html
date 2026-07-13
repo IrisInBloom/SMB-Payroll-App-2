@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paylocity · Simplified SMB Payroll</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#14142B;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;color:#111827}
+button,input,textarea,select{font-family:inherit}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.frame{display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:28px 16px}
+.phone{width:390px;height:844px;background:#F9FAFB;border-radius:48px;overflow:hidden;position:relative;
+  box-shadow:0 0 0 8px #222,0 0 0 11px #333,0 40px 80px rgba(0,0,0,.6);display:flex;flex-direction:column}
+.status{background:#fff;padding:14px 28px 8px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;color:#111827;flex-shrink:0}
+.status-r{display:flex;gap:5px;align-items:center}
+#screen-root{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;transition:opacity .15s}
+#screen-root::-webkit-scrollbar{width:0}
+#bottom-nav{background:#fff;border-top:1px solid rgba(0,0,0,.06);padding:8px 0 24px;display:none;justify-content:space-around;align-items:center;flex-shrink:0}
+.nb{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px}
+.nl{font-size:10px;font-weight:500}
+#sheet-overlay{display:none;position:absolute;inset:0;z-index:100;background:rgba(0,0,0,.45);border-radius:48px}
+#sheet-content{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;max-height:82%;overflow-y:auto}
+:root{
+  --navy:#1E293B;--navy2:#0F172A;
+  --g:#059669;--gb:#ECFDF5;--gt:#065F46;--gbr:#A7F3D0;
+  --a:#D97706;--ab:#FFFBEB;--at:#92400E;--abr:#FDE68A;
+  --r:#DC2626;--rb:#FEF2F2;
+  --pu:#7C3AED;--pub:#EDE9FE;--put:#4C1D95;
+  --t1:#111827;--t2:#374151;--t3:#6B7280;--t4:#9CA3AF;
+  --bd:rgba(0,0,0,.07);--bg:#F9FAFB
+}
+.pi{padding:14px 19px 20px;display:flex;flex-direction:column;gap:11px;flex:1}
+.ph{padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:20}
+.pt{font-size:17px;font-weight:700;color:var(--t1)}
+.ps{font-size:12px;color:var(--t3);margin-top:1px}
+.card{background:#fff;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.04)}
+.cp{padding:14px 16px}
+.btn{width:100%;padding:14px;border:none;border-radius:13px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-k{background:var(--navy);color:#fff}
+.btn-g{background:var(--g);color:#fff}
+.btn-o{background:none;border:1.5px solid rgba(0,0,0,.1);color:var(--t2)}
+.btn-r{background:var(--r);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.inp{width:100%;padding:12px 14px;background:#fff;border:1.5px solid #E5E7EB;border-radius:11px;font-size:15px;color:var(--t1);outline:none}
+.inp:focus{border-color:var(--navy)}
+.lbl{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:5px;display:block}
+.bk{background:none;border:none;font-size:18px;color:var(--t3);cursor:pointer;padding:0;line-height:1}
+.badge-g{background:var(--gb);color:var(--gt);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+.badge-a{background:var(--ab);color:var(--at);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+.badge-r{background:var(--rb);color:var(--r);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+.badge-ai{background:var(--pub);color:var(--put);font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;display:inline-flex;align-items:center;gap:2px;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
+.bn-g{background:var(--gb);border:1px solid var(--gbr);border-radius:12px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between}
+.bn-a{background:var(--ab);border:1px solid var(--abr);border-radius:12px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between}
+.opt{display:flex;align-items:center;padding:12px 13px;background:#fff;border:1.5px solid #E5E7EB;border-radius:11px;cursor:pointer;gap:10px}
+.opt.sel{border-color:var(--navy)}
+.radio{width:17px;height:17px;border-radius:50%;border:2px solid #E5E7EB;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.opt.sel .radio{border-color:var(--navy);background:var(--navy)}
+.opt.sel .radio::after{content:'';width:5px;height:5px;border-radius:50%;background:#fff}
+.div{height:1px;background:rgba(0,0,0,.05)}
+.tap{cursor:pointer;transition:opacity .12s}
+.tap:active{opacity:.65}
+.row{display:flex;align-items:center;gap:10px;padding:11px 13px;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:opacity .12s}
+.row:active{opacity:.7}
+.chevron{color:var(--t4);font-size:13px;margin-left:auto}
+@keyframes shim{from{background-position:-200% 0}to{background-position:200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skel{background:linear-gradient(90deg,#F3F4F6 25%,#E9EAEC 50%,#F3F4F6 75%);background-size:200%;animation:shim 1.5s infinite;border-radius:5px}
+.tab-row{display:flex;border-bottom:1.5px solid #E5E7EB;margin-bottom:14px}
+.tab{flex:1;padding:9px 0;background:none;border:none;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1.5px}
+.tab.on{color:var(--navy);border-bottom-color:var(--navy);font-weight:600}
+.sl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.ht{display:flex;background:#F3F4F6;border-radius:10px;padding:3px;margin-bottom:12px}
+.htb{flex:1;padding:7px 0;border-radius:7px;border:none;font-size:12px;font-weight:500;cursor:pointer}
+.htb.on{background:#fff;font-weight:600;color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.htb:not(.on){background:none;color:var(--t3)}
+/* ── new: two-up stat block (dollars + hours at equal weight) ── */
+.stat2{display:flex;gap:22px}
+.s-val{font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.02em;line-height:1.05}
+.s-lbl{font-size:10px;color:var(--t4);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+/* ── new: 4-field hour-type stepper ── */
+.stepper{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:11px;margin-bottom:7px;background:#fff}
+.stepper.ot{border-color:var(--abr);background:var(--ab)}
+.st-lbl{font-size:12px;font-weight:600;color:var(--t2);flex:1}
+.stepper.ot .st-lbl{color:var(--at)}
+.st-ctl{display:flex;align-items:center;gap:9px}
+.stepbtn{width:26px;height:26px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;font-size:15px;font-weight:700;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0}
+.stepbtn:active{opacity:.6}
+.st-val{font-size:14px;font-weight:700;color:var(--t1);min-width:22px;text-align:center}
+/* ── new: compliance one-liner, collapsed by default ── */
+.comp-line{background:var(--gb);border:1px solid var(--gbr);border-radius:12px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:8px}
+.comp-line.exp-open{border-radius:12px 12px 0 0}
+.comp-body{background:#fff;border:1px solid var(--gbr);border-top:none;border-radius:0 0 12px 12px;padding:2px 13px 8px}
+/* ── new: bank sufficiency card ── */
+.bank-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px}
+.bank-row:last-child{border-bottom:none}
+/* ── header icon (NL entry) ── */
+.hdr-ic{background:none;border:none;cursor:pointer;color:var(--t2);padding:4px;display:flex;align-items:center;justify-content:center}
+.dev-pill{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;z-index:5;letter-spacing:.03em}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="phone" id="phone">
+    <div class="status">
+      <span>9:41</span>
+      <div class="status-r">
+        <svg width="15" height="11" viewBox="0 0 15 11"><rect x="0" y="3" width="2.5" height="8" rx="1" fill="#111827"/><rect x="4" y="2" width="2.5" height="9" rx="1" fill="#111827"/><rect x="8" y="0" width="2.5" height="11" rx="1" fill="#111827"/><rect x="12" y="0" width="2.5" height="11" rx="1" fill="#E5E7EB"/></svg>
+        <svg width="15" height="11" viewBox="0 0 20 16"><path d="M10 3C13.5 3 16.6 4.7 18.5 7L20 5.5C17.7 2.5 14 1 10 1S2.3 2.5 0 5.5L1.5 7C3.4 4.7 6.5 3 10 3z" fill="#111827"/><path d="M10 7c2.2 0 4.1 1 5.5 2.7L17 8C15.3 6 12.8 5 10 5S4.7 6 3 8l1.5 1.7C5.9 8 7.8 7 10 7z" fill="#111827"/><circle cx="10" cy="13" r="2" fill="#111827"/></svg>
+        <span style="font-size:11px;font-weight:500">100%</span>
+      </div>
+    </div>
+    <div id="screen-root"></div>
+    <div id="bottom-nav"></div>
+    <div id="sheet-overlay" onclick="if(event.target===this)hideSheet()">
+      <div id="sheet-content"></div>
+    </div>
+    <div id="dev-pill" class="dev-pill">DEMO</div>
+  </div>
+</div>
+<script>
+// ══════════════════════════════════════════════════════════
+// ICON SYSTEM
+// ══════════════════════════════════════════════════════════
+function ico(n,on){
+  var c=on?'#111827':'#9CA3AF', w=on?'2.3':'1.7', f=on?'#111827':'none';
+  var S='<svg width="24" height="24" viewBox="0 0 24 24" fill="none">';
+  if(n==='home') return S+'<path d="M3 9.5L12 3L21 9.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" fill="'+f+'" stroke="'+c+'" stroke-width="'+w+'" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="'+(on?'#fff':c)+'" stroke-width="'+w+'" stroke-linecap="round"/></svg>';
+  if(n==='team') return S+'<circle cx="9" cy="7" r="4" fill="'+f+'" stroke="'+c+'" stroke-width="'+w+'"/><path d="M1 19c0-4 3.6-6 8-6s8 2 8 6" stroke="'+c+'" stroke-width="'+w+'" stroke-linecap="round"/><circle cx="17" cy="7" r="3" fill="'+f+'" stroke="'+c+'" stroke-width="'+w+'"/><path d="M22 19c0-3-2.3-4.5-5-4.5" stroke="'+c+'" stroke-width="'+w+'" stroke-linecap="round"/></svg>';
+  if(n==='cog') return S+'<circle cx="12" cy="12" r="3" fill="'+f+'" stroke="'+c+'" stroke-width="'+w+'"/><path d="M12 2v2.5M12 19.5V22M4.22 4.22l1.77 1.77M18.01 18.01l1.77 1.77M2 12h2.5M19.5 12H22M4.22 19.78l1.77-1.77M18.01 5.99l1.77-1.77" stroke="'+c+'" stroke-width="'+w+'" stroke-linecap="round"/></svg>';
+  return '';
+}
+function chatIcon(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>';}
+function micIcon(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';}
+
+// ══════════════════════════════════════════════════════════
+// EMPLOYEE DATA — carried over ids/names/rates from original,
+// extended with 4-type hour breakdown (Hourly/PTO/Holiday/OT)
+// ══════════════════════════════════════════════════════════
+var EMP=[
+  {id:'SK',name:'Sarah Kim',role:'Senior Designer',type:'Salaried',rate:'$65,000/yr',period:'$2,500',net:'$1,891',status:'Active',bank:'Chase ••4521',w4:'Single, 0',ded:[{n:'Health Insurance',a:235},{n:'401k (6%)',a:250}],ytd:{g:27500,n:20800,t:5500,k:1650},hist:[{d:'Jun 1–15',amt:2500,net:1891,s:'Scheduled'},{d:'May 15–31',amt:2500,net:1891,s:'Paid'},{d:'May 1–14',amt:2500,net:1891,s:'Paid'}],hrs:{hourly:0,pto:0,holiday:0,ot:0}},
+  {id:'MT',name:'Marcus Thompson',role:'Operations Manager',type:'Hourly',rate:'$34/hr',period:'$2,890',net:'$2,081',status:'Active',bank:'WF ••8834',w4:'Married, 1',ded:[{n:'Health Insurance',a:235},{n:'401k (4%)',a:113}],ytd:{g:28900,n:21200,t:5600,k:1160},hist:[{d:'Jun 1–15',amt:2890,net:2081,s:'Scheduled'},{d:'May 15–31',amt:2651,net:1910,s:'Paid'},{d:'May 1–14',amt:2720,net:1958,s:'Paid'}],hrs:{hourly:80,pto:0,holiday:0,ot:0}},
+  {id:'ER',name:'Elena Rodriguez',role:'VP Engineering',type:'Salaried',rate:'$75,000/yr',period:'$2,885',net:'$2,104',status:'Active',bank:'BofA ••2210',w4:'Single, 0',ded:[{n:'Health Insurance',a:235},{n:'Dental',a:18},{n:'401k (8%)',a:462}],ytd:{g:31750,n:22400,t:7200,k:5080},hist:[{d:'Jun 1–15',amt:2885,net:2104,s:'Scheduled'},{d:'May 15–31',amt:2885,net:2104,s:'Paid'},{d:'May 1–14',amt:2885,net:2104,s:'Paid'}],hrs:{hourly:0,pto:0,holiday:0,ot:0}},
+  {id:'MC',name:'Maria Chen',role:'Account Manager',type:'Salaried',rate:'$55,000/yr',period:'$2,115',net:'$1,552',status:'Active',bank:null,w4:'Single, 0',ded:[{n:'Health Insurance',a:235},{n:'401k (5%)',a:212}],issue:'Missing direct deposit',ytd:{g:23250,n:17050,t:4650,k:2325},hist:[{d:'Jun 1–15',amt:2115,net:1552,s:'Pending'},{d:'May 15–31',amt:2115,net:1552,s:'Paid'},{d:'May 1–14',amt:2115,net:1552,s:'Paid'}],hrs:{hourly:0,pto:0,holiday:0,ot:0}},
+  {id:'JR',name:'James Rodriguez',role:'Sales Lead',type:'Hourly',rate:'$28/hr',period:'$2,240',net:'$1,655',status:'Active',bank:'Chase ••9901',w4:'Married, 2',ded:[{n:'Health Insurance',a:235}],ytd:{g:24000,n:17800,t:4900,k:0},hist:[{d:'Jun 1–15',amt:2240,net:1655,s:'Scheduled'},{d:'May 15–31',amt:2240,net:1655,s:'Paid'},{d:'May 1–14',amt:2184,net:1614,s:'Paid'}],hrs:{hourly:80,pto:0,holiday:0,ot:0}},
+  {id:'LP',name:'Laura Park',role:'Director of Finance',type:'Salaried',rate:'$85,000/yr',period:'$3,269',net:'$2,271',status:'Active',bank:'Chase ••6677',w4:'Married, 0',ded:[{n:'Health Insurance',a:235},{n:'Dental',a:18},{n:'Vision',a:8},{n:'401k (10%)',a:654}],ytd:{g:35950,n:24980,t:8000,k:7190},hist:[{d:'Jun 1–15',amt:3269,net:2271,s:'Scheduled'},{d:'May 15–31',amt:3269,net:2271,s:'Paid'},{d:'May 1–14',amt:3269,net:2271,s:'Paid'}],hrs:{hourly:0,pto:0,holiday:0,ot:0}},
+  {id:'DP',name:'David Park',role:'Marketing Lead',type:'Salaried',rate:'$60,000/yr',period:'$2,308',net:'$1,710',status:'Active',bank:'Chase ••1122',w4:'Single, 0',ded:[{n:'Health Insurance',a:235},{n:'401k (5%)',a:231}],ytd:{g:25400,n:18800,t:5400,k:2310},hist:[{d:'Jun 1–15',amt:2308,net:1710,s:'Scheduled'},{d:'May 15–31',amt:2308,net:1710,s:'Paid'}],hrs:{hourly:0,pto:8,holiday:0,ot:0}},
+  {id:'AW',name:'Aisha Williams',role:'Customer Success',type:'Hourly',rate:'$26/hr',period:'$2,184',net:'$1,615',status:'Active',bank:'BofA ••7744',w4:'Single, 1',ded:[{n:'Health Insurance',a:235}],ytd:{g:22880,n:16940,t:4950,k:0},hist:[{d:'Jun 1–15',amt:2184,net:1615,s:'Scheduled'},{d:'May 15–31',amt:2080,net:1540,s:'Paid'}],hrs:{hourly:76,pto:8,holiday:0,ot:0}},
+  {id:'RN',name:'Rafael Nunez',role:'Backend Engineer',type:'Hourly',rate:'$32/hr',period:'$3,462',net:'$2,405',status:'Active',bank:'Chase ••3388',w4:'Married, 0',ded:[{n:'Health Insurance',a:235},{n:'Dental',a:18},{n:'401k (10%)',a:692}],ytd:{g:38080,n:26450,t:8500,k:7610},hist:[{d:'Jun 1–15',amt:3462,net:2405,s:'Scheduled'},{d:'May 15–31',amt:3462,net:2405,s:'Paid'}],hrs:{hourly:108,pto:0,holiday:0,ot:0}},
+  {id:'TM',name:'Tanya Morris',role:'Operations Analyst',type:'Hourly',rate:'$30/hr',period:'$2,460',net:'$1,810',status:'Active',bank:'Chase ••5566',w4:'Single, 0',ded:[{n:'Health Insurance',a:235},{n:'401k (3%)',a:144}],ytd:{g:26400,n:19400,t:5600,k:1585},hist:[{d:'Jun 1–15',amt:2460,net:1810,s:'Scheduled'},{d:'May 15–31',amt:2400,net:1765,s:'Paid'}],hrs:{hourly:80,pto:0,holiday:0,ot:0}},
+  {id:'NG',name:'Nora Garcia',role:'UX Researcher',type:'Salaried',rate:'$70,000/yr',period:'$2,692',net:'$1,974',status:'Active',bank:'WF ••9911',w4:'Single, 0',ded:[{n:'Health Insurance',a:235},{n:'401k (6%)',a:269}],ytd:{g:29615,n:21710,t:6310,k:2958},hist:[{d:'Jun 1–15',amt:2692,net:1974,s:'Scheduled'},{d:'May 15–31',amt:2692,net:1974,s:'Paid'}],hrs:{hourly:0,pto:0,holiday:0,ot:0}},
+  {id:'BL',name:'Ben Liu',role:'DevOps Engineer',type:'Salaried',rate:'$95,000/yr',period:'$3,654',net:'$2,520',status:'Active',bank:'Chase ••4455',w4:'Single, 0',ded:[{n:'Health Insurance',a:235},{n:'Dental',a:18},{n:'401k (10%)',a:731}],ytd:{g:40190,n:27720,t:9100,k:8040},hist:[{d:'Jun 1–15',amt:3654,net:2520,s:'Scheduled'},{d:'May 15–31',amt:3654,net:2520,s:'Paid'}],hrs:{hourly:0,pto:0,holiday:0,ot:0}},
+];
+// Salaried staff: regular hours are a fixed 40/period, not an editable field —
+// only PTO is exposed for them in the hour steppers.
+EMP.forEach(function(e){ if(e.type==='Salaried') e.hrs.hourly=40; });
+
+var PAY_HIST=[
+  {date:'Jun 15',label:'Jun 1–15',amount:54320,hrs:312,emp:12,issues:0},
+  {date:'May 31',label:'May 15–31',amount:51847,hrs:308,emp:12,issues:0},
+  {date:'May 15',label:'May 1–14',amount:51203,hrs:306,emp:12,issues:0},
+  {date:'Apr 30',label:'Apr 15–30',amount:50988,hrs:304,emp:12,issues:1,iNote:'OT auto-resolved'},
+  {date:'Apr 15',label:'Apr 1–14',amount:50344,hrs:301,emp:11,issues:0},
+];
+
+// Payroll headline totals for the current (Jun 1–15) period — illustrative,
+// consistent across Home / Payroll Review / Final Approval / Submitted.
+var TOTALS={gross:54320,hours:312,taxes:8940,deductions:2580,employerCost:63075,netDeposits:42800,employees:12,payDate:'Jun 30, 2026',period:'Jun 1–15',nextPayDate:'Jul 15, 2026'};
+
+// Bank
+var BANK={name:'Chase •••• 7823',type:'Business Checking',balance:88410,upcomingDebit:54320};
+
+// ══════════════════════════════════════════════════════════
+// FACE DATA + AVATAR PHOTOS (ported verbatim)
+// ══════════════════════════════════════════════════════════
+var FACES={
+  SK:{bg:'#EDE9FE',s:'#FDDBB8',h:'#2A0A00',hl:'long'},
+  MT:{bg:'#DBEAFE',s:'#C89060',h:'#0A0A0A',hl:'short'},
+  ER:{bg:'#FCE7F3',s:'#D4895A',h:'#1A0800',hl:'long'},
+  MC:{bg:'#FEF3C7',s:'#F5C898',h:'#0A0A0A',hl:'long'},
+  JR:{bg:'#D1FAE5',s:'#C8843A',h:'#1A0800',hl:'short'},
+  LP:{bg:'#E0E7FF',s:'#F8DEC0',h:'#0A0A0A',hl:'long'},
+  DP:{bg:'#DBEAFE',s:'#C8902A',h:'#1A0600',hl:'short'},
+  AW:{bg:'#FEE2E2',s:'#A87848',h:'#0A0A0A',hl:'medium'},
+  RN:{bg:'#D1FAE5',s:'#F0C888',h:'#2A0A00',hl:'short'},
+  TM:{bg:'#FEF3C7',s:'#D4A870',h:'#0A0A0A',hl:'medium'},
+  NG:{bg:'#ECFDF5',s:'#F0BF88',h:'#2A0A00',hl:'long'},
+  BL:{bg:'#CFFAFE',s:'#6A3A18',h:'#0A0A0A',hl:'short'},
+};
+
+// av() — inline face SVG (works with no network access)
+function av(id,pending,sz){
+  sz=sz||34;
+  var c=sz/2;
+  var face=FACES[id];
+  var ring=pending?';box-shadow:0 0 0 2px #fff,0 0 0 4px var(--a)':'';
+  if(!face){
+    return '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:#1E293B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(sz*.32)+'px;font-weight:600;flex-shrink:0'+ring+'">'+id+'</div>';
+  }
+  var isLong=face.hl==='long',isMed=face.hl==='medium';
+  var hcy=sz*(isLong?0.24:isMed?0.20:0.17);
+  var hrx=sz*0.44,hry=sz*(isLong?0.40:isMed?0.28:0.19);
+  var sideH='';
+  if(isLong){sideH='<ellipse cx="'+(c-sz*0.31)+'" cy="'+(sz*0.61)+'" rx="'+(sz*0.13)+'" ry="'+(sz*0.22)+'" fill="'+face.h+'"/><ellipse cx="'+(c+sz*0.31)+'" cy="'+(sz*0.61)+'" rx="'+(sz*0.13)+'" ry="'+(sz*0.22)+'" fill="'+face.h+'"/>';}
+  else if(isMed){sideH='<ellipse cx="'+(c-sz*0.30)+'" cy="'+(sz*0.55)+'" rx="'+(sz*0.12)+'" ry="'+(sz*0.16)+'" fill="'+face.h+'"/><ellipse cx="'+(c+sz*0.30)+'" cy="'+(sz*0.55)+'" rx="'+(sz*0.12)+'" ry="'+(sz*0.16)+'" fill="'+face.h+'"/>';}
+  var fcy=sz*0.55,fr=sz*0.34;
+  var ey=sz*0.50,er=Math.max(1,sz*0.028);
+  var my=sz*0.61,mqy=my+sz*0.038;
+  var svgFace='<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'" style="display:block">'
+    +'<circle cx="'+c+'" cy="'+c+'" r="'+c+'" fill="'+face.bg+'"/>'
+    +sideH
+    +'<ellipse cx="'+c+'" cy="'+hcy+'" rx="'+hrx+'" ry="'+hry+'" fill="'+face.h+'"/>'
+    +'<circle cx="'+c+'" cy="'+fcy+'" r="'+fr+'" fill="'+face.s+'"/>'
+    +'<circle cx="'+(c-sz*0.09)+'" cy="'+ey+'" r="'+er+'" fill="rgba(15,8,3,.78)"/>'
+    +'<circle cx="'+(c+sz*0.09)+'" cy="'+ey+'" r="'+er+'" fill="rgba(15,8,3,.78)"/>'
+    +'<path d="M'+(c-sz*0.07)+' '+my+' Q'+c+' '+mqy+' '+(c+sz*0.07)+' '+my+'" stroke="rgba(100,45,45,.55)" stroke-width="'+Math.max(1,sz*0.023)+'" fill="none" stroke-linecap="round"/>'
+    +'</svg>';
+  return '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;overflow:hidden;flex-shrink:0'+ring+'">'
+    +svgFace+'</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// JURISDICTION (Illinois) — for termination flow, ported verbatim
+// ══════════════════════════════════════════════════════════
+var JURIS={
+  IL:{name:'Illinois',
+      involuntary:'Final pay due by the next regular payday',
+      voluntary:'Final pay due by the next regular payday',
+      nextPayday:'Jun 30',
+      ptoPayout:true,
+      ptoNote:'Illinois requires earned, unused PTO to be paid out.'}
+};
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+var S={
+  screen:'chooser',
+  demoPath:null,          // 'a' | 'b' | 'c'
+  homeState:'first',      // 'ready' | 'attention' | 'first'
+  homeTab:'upcoming',     // 'upcoming' | 'past' — segmented control on Home
+  currentEmp:null,
+  empTab:'overview',
+  from:'home',
+
+  // collect hours (path 1c)
+  collectMethod:null,
+  collectStage:'idle',    // idle | loading | done
+  hoursCollected:false,
+  employeesLoaded:true,   // false only in fresh first-payroll state; flips true
+                          // when the prior register/sheet is imported (employees +
+                          // hours arrive together, so Team is empty until then)
+  bankConnected:true,     // false only in fresh first-payroll state; a brand-new
+                          // business likely hasn't linked a bank account yet
+  bankConnectStage:'choose', // choose | connecting — local UI stage on the
+                          // bank-connect step of the first-payroll wizard
+  setupFlow:false,        // true while inside the "Get started" 2-step wizard
+                          // (connect bank → collect hours); governs step
+                          // labels and back-navigation on those two screens
+
+  // payroll review
+  complianceExpanded:false,
+  editHoursOpenId:null,   // which employee's stepper accordion is open on 3d
+  aiInsightExpanded:false,// collapsed AI insight card on Home
+
+  // exceptions (path 1b)
+  ddResolved:false,
+  otResolved:false,
+  otDecision:null,        // 'keep' | 'adjust' | 'remove'
+
+  // termination (ported)
+  termType:null,termLastDay:'Jun 20',termPayout:'next',
+
+  // change pay rate
+  rateNewValue:'',
+  rateWhen:'this',        // 'this' | 'next'
+
+  // off-cycle payment (now a bottom sheet, not a page)
+  paymentRecipient:null,
+  paymentType:'bonus',    // bonus | commission | reimbursement | makeup
+  paymentAmount:'',
+  paymentMemo:'',
+  processDate:'today',
+  paymentSheetStage:'form', // 'form' | 'sent'
+
+  // scenario modeler
+  scenarioMode:'whatif',scenarioInput:'',scenarioBudget:'',
+  scenarioResult:null,scenarioLoading:false,
+
+  // NL / Ask Paylocity — docked on Home, expands in place
+  nlActive:false,         // expanded (input or confirm) vs collapsed dock
+  nlStage:'input',        // 'input' | 'confirm'
+  nlInput:'',
+  nlPendingAction:null,
+
+  // settings
+  settingsSection:null,   // 'company' | 'schedule' | 'banking' | 'notifications' | 'security'
+
+  // pay history
+  historySelected:null,
+  complianceContext:null, // null = current period; otherwise index into PAY_HIST
+};
+
+// ══════════════════════════════════════════════════════════
+// MOCK: scenario examples (ported, trimmed)
+// ══════════════════════════════════════════════════════════
+var SCEN={
+  "$500 bonus for all 12 employees":{summary:"$500 bonus adds $7,838 in total employer cost. Each employee nets approximately $342 after taxes.",total_employer_cost:7838,employee_net:342,breakdown:[{label:"Bonus pay",amount:6000,type:"base"},{label:"FICA employer share",amount:918,type:"tax"},{label:"Federal withholding",amount:720,type:"tax"},{label:"Illinois withholding",amount:200,type:"tax"}],recommendation:"Process as a separate bonus check so regular payroll reporting stays clean."},
+  "Give Marcus a $3k raise":{summary:"A $3,000 annual raise adds $285 per bi-weekly period. Marcus nets an additional $196 per paycheck.",total_employer_cost:285,employee_net:196,breakdown:[{label:"Salary increase (bi-weekly)",amount:231,type:"base"},{label:"FICA employer share",amount:18,type:"tax"},{label:"Federal withholding",amount:25,type:"tax"},{label:"Illinois withholding",amount:11,type:"tax"}],recommendation:"This moves Marcus $2,100 above the Illinois median for his role."},
+  "Add part-time at $22/hr 20h/week":{summary:"A 20h/week employee at $22/hr adds $2,156 per bi-weekly period including taxes and prorated benefits.",total_employer_cost:2156,employee_net:598,breakdown:[{label:"Base pay (80h/period)",amount:1760,type:"base"},{label:"FICA employer share",amount:135,type:"tax"},{label:"Illinois SUI",amount:61,type:"tax"},{label:"Benefits prorate",amount:200,type:"benefit"}],recommendation:"At 20h/week this employee doesn't trigger ACA eligibility (threshold: 30h)."}
+};
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function fmt(n){return '$'+Math.round(n).toLocaleString();}
+function empGross(e){
+  if(e.type==='Hourly'){
+    var rate=parseFloat((e.rate||'0').replace(/[^0-9.]/g,''))||0;
+    var otRate=(e.otRate!=null)?e.otRate:rate*1.5;
+    var h=e.hrs||{hourly:0,pto:0,holiday:0,ot:0};
+    return Math.round(rate*h.hourly + rate*h.pto + rate*h.holiday + otRate*h.ot);
+  }
+  var annual=parseFloat((e.rate||'0').replace(/[^0-9.]/g,''))||0;
+  return Math.round(annual/26);
+}
+function empHoursTotal(e){
+  var h=e.hrs||{hourly:0,pto:0,holiday:0,ot:0};
+  return h.hourly+h.pto+h.holiday+h.ot;
+}
+
+// ══════════════════════════════════════════════════════════
+// SHEET (bottom modal) + NL OVERLAY (full-screen)
+// ══════════════════════════════════════════════════════════
+function showSheet(h){document.getElementById('sheet-content').innerHTML=h;document.getElementById('sheet-overlay').style.display='block';}
+function hideSheet(){document.getElementById('sheet-overlay').style.display='none';}
+
+// ══════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════
+var TABS=[{id:'home',icon:'home',label:'Home'},{id:'team',icon:'team',label:'Team'},{id:'settings',icon:'cog',label:'Settings'}];
+var MAIN_SCREENS=['home','team','settings'];
+
+function updateNav(screen){
+  var nav=document.getElementById('bottom-nav');
+  nav.style.display=MAIN_SCREENS.indexOf(screen)>-1?'flex':'none';
+  nav.innerHTML=TABS.map(function(t){
+    var on=screen===t.id;
+    return '<button class="nb" onclick="go(\''+t.id+'\')" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 12px">'+ico(t.icon,on)+'<span class="nl" style="color:'+(on?'#111827':'#9CA3AF')+'">'+t.label+'</span></button>';
+  }).join('');
+}
+
+function go(screen,opts){
+  opts=opts||{};if(opts.from)S.from=opts.from;S.screen=screen;
+  if(screen==='collectMethod'){ S.collectMethod=null; S.collectStage='idle'; }
+  if(screen==='connectBankStep'&&!S.bankConnected){ S.bankConnectStage='choose'; }
+  var root=document.getElementById('screen-root');
+  root.style.opacity='0';
+  setTimeout(function(){root.innerHTML=draw(screen);root.style.opacity='1';updateNav(screen);
+    window.scrollTo(0,0); root.scrollTop=0;
+  },120);
+}
+function re(screen){
+  var root=document.getElementById('screen-root');
+  // re() replaces the whole subtree via innerHTML, which would otherwise reset
+  // scroll to the top — find whichever element is the screen's actual scroll
+  // region and carry its position across the re-render.
+  var scrollEl=root.querySelector('[style*="overflow-y:auto"]')||root;
+  var savedTop=scrollEl.scrollTop;
+  root.innerHTML=draw(screen||S.screen);
+  var newScrollEl=root.querySelector('[style*="overflow-y:auto"]')||root;
+  newScrollEl.scrollTop=savedTop;
+}
+function showEmp(id,from){S.currentEmp=EMP.find(function(e){return e.id===id;})||null;S.empTab='overview';S.from=from||'team';go('empDetail');}
+
+// ══════════════════════════════════════════════════════════
+// DEMO ENTRY — replaces lockscreen(). Dev-only chooser, also
+// readable via ?path=a|b|c URL param.
+// ══════════════════════════════════════════════════════════
+function enterDemo(path){
+  S.demoPath=path;
+  if(path==='a'){ S.homeState='ready'; S.employeesLoaded=true; S.bankConnected=true; S.ddResolved=true; S.otResolved=true; }
+  else if(path==='b'){ S.homeState='attention'; S.ddResolved=false; S.otResolved=false; S.employeesLoaded=true; S.bankConnected=true; }
+  else { S.homeState='first'; S.hoursCollected=false; S.collectMethod=null; S.collectStage='idle'; S.employeesLoaded=false; S.bankConnected=false; S.setupFlow=false; S.bankConnectStage='choose'; }
+  go('home');
+}
+
+// ══════════════════════════════════════════════════════════
+// 0 — ENTRY CHOOSER (prototype-only; not part of the real product)
+// ══════════════════════════════════════════════════════════
+// Wireframe tag: 0 (prototype-only entry, not part of the real product)
+function chooser(){
+  function opt(path,title,sub,tag){
+    return '<div class="tap" onclick="enterDemo(\''+path+'\')" style="padding:16px;border-radius:16px;border:1.5px solid #E5E7EB;background:#fff;display:flex;flex-direction:column;gap:4px;cursor:pointer">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:15px;font-weight:700;color:var(--t1)">'+title+'</span><span class="'+tag[1]+'">'+tag[0]+'</span></div>'
+      +'<div style="font-size:12px;color:var(--t3);line-height:1.5">'+sub+'</div>'
+      +'</div>';
+  }
+  return '<div style="background:var(--navy2);flex:1;display:flex;flex-direction:column;padding:44px 22px 28px">'
+    +'<div style="text-align:center;margin-bottom:28px">'
+    +'<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Paylocity · Prototype</div>'
+    +'<div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em">Choose a demo state</div>'
+    +'<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.5">Not part of the real product — lets you jump into any of the 3 review paths.</div>'
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:12px">'
+    +opt('c','First payroll','No hours on file yet. Collect hours via upload, smart defaults, or a connected spreadsheet before payroll can run.',['1c','badge-a'])
+    +opt('a','Happy path','Payroll is fully resolved and ready to run with zero intervention.',['1a','badge-g'])
+    +opt('b','Exceptions','1 outstanding issue — missing direct deposit — plus an overtime approval to confirm.',['1b','badge-a'])
+    +'</div>'
+    +'<div style="flex:1"></div>'
+    +'<div style="text-align:center;font-size:11px;color:rgba(255,255,255,.3)">All 3 paths converge on the same Payroll Review screen.</div>'
+    +'</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// 1 — HOME (same screen, 3 states)
+// ══════════════════════════════════════════════════════════
+function homeHeader(){
+  return '<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">'
+    +'<div><div style="font-size:12px;color:var(--t3)">Prism Inc.</div><div style="font-size:20px;font-weight:800;color:var(--t1);letter-spacing:-.01em">Payroll</div></div>'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<button class="hdr-ic" onclick="openNotifications()" style="width:34px;height:34px;border-radius:50%;border:1.5px solid #E5E7EB"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>'
+    +'<div class="tap" onclick="go(\'settings\')" style="width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">JA</div>'
+    +'</div></div>';
+}
+function openNotifications(){
+  showSheet('<div style="padding:20px 20px 32px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:16px;font-weight:700">Notifications</div><button onclick="hideSheet()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div><div style="text-align:center;padding:20px 0"><div style="display:flex;justify-content:center;color:var(--t3);margin-bottom:8px">'+iconGlyph('bell','currentColor',28)+'</div><div style="font-size:13px;color:var(--t3)">You\u2019re all caught up.</div></div></div>');
+}
+// Segmented control — Upcoming / Past (tucks Previous Payrolls in here)
+function segmentedControl(){
+  var up=S.homeTab==='upcoming';
+  return '<div style="padding:12px 18px 0;flex-shrink:0"><div style="display:flex;background:#EEF0F2;border-radius:12px;padding:4px;gap:2px">'
+    +'<button onclick="S.homeTab=\'upcoming\';re()" style="flex:1;padding:9px 0;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:700;background:'+(up?'#fff':'none')+';color:'+(up?'var(--t1)':'var(--t3)')+';box-shadow:'+(up?'0 1px 3px rgba(0,0,0,.12)':'none')+'">Upcoming</button>'
+    +'<button onclick="S.homeTab=\'past\';re()" style="flex:1;padding:9px 0;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:700;background:'+(!up?'#fff':'none')+';color:'+(!up?'var(--t1)':'var(--t3)')+';box-shadow:'+(!up?'0 1px 3px rgba(0,0,0,.12)':'none')+'">Past</button>'
+    +'</div></div>';
+}
+// Collapsed-by-default AI insight row — tap to expand full explanation
+function aiInsightCard(){
+  var open=S.aiInsightExpanded;
+  var full="Two approved raises and the June health-insurance adjustment account for $2,380 of the $2,473 increase. Marcus T. worked 4 hours of overtime this period.";
+  return '<div class="card" style="overflow:hidden">'
+    +'<div class="tap" onclick="S.aiInsightExpanded=!S.aiInsightExpanded;re()" style="display:flex;align-items:center;gap:9px;padding:11px 13px">'
+    +'<span class="badge-ai" style="flex-shrink:0">✦ AI</span>'
+    +'<span style="flex:1;font-size:12px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Labor costs up</span>'
+    +'<span class="badge-a" style="flex-shrink:0">↑ 4.8%</span>'
+    +'<span class="chevron" style="flex-shrink:0">'+(open?'▲':'▼')+'</span>'
+    +'</div>'
+    +(open?'<div style="padding:0 13px 13px;font-size:12px;color:var(--t2);line-height:1.6">'+full+'</div>':'')
+    +'</div>';
+}
+function homeTiles(exceptionsCount){
+  var topRow=(exceptionsCount>0)
+    ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">'
+      +'<div class="tap card cp" onclick="go(\'exceptions\')" style="padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--t2)">Exceptions</div><div style="font-size:11px;color:var(--at);margin-top:3px">'+exceptionsCount+' exception'+(exceptionsCount===1?'':'s')+'</div></div>'
+      +'<div class="tap card cp" onclick="go(\'scenarioModel\')" style="padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--t2)">Scenario</div><div style="font-size:11px;color:var(--t3);margin-top:3px">model</div></div>'
+      +'</div>'
+    : '<div class="tap card cp" onclick="go(\'scenarioModel\')" style="padding:12px;text-align:center"><span style="font-size:13px;font-weight:700;color:var(--t2)">Scenario model</span></div>';
+  return '<div style="display:flex;flex-direction:column;gap:7px">'
+    +topRow
+    +'<div class="tap card cp" onclick="openOffCycleSheet()" style="padding:12px;text-align:center"><span style="font-size:13px;font-weight:700;color:var(--t2)">Off-cycle payment</span></div>'
+    +'</div>';
+}
+
+// ── Docked natural-language bar — bottom of Home, expands in place ──
+function nlDock(){
+  // ── Collapsed: a single sleek pill ──
+  if(!S.nlActive){
+    return '<div class="tap" onclick="S.nlActive=true;S.nlStage=\'input\';re()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#fff;border:1.5px solid #E8EAED;border-radius:22px;box-shadow:0 1px 3px rgba(0,0,0,.04)">'
+      +'<span style="display:flex;color:var(--pu)">'+sparkIcon()+'</span>'
+      +'<span style="flex:1;font-size:13px;color:var(--t3)">Ask anything…</span>'
+      +'<span style="display:flex;color:var(--t4)">'+micIcon()+'</span>'
+      +'</div>';
+  }
+  // ── Confirm: compact result + inline actions ──
+  if(S.nlStage==='confirm'){
+    var act=S.nlPendingAction||{response:''};
+    return '<div style="background:#fff;border:1.5px solid #E8EAED;border-radius:20px;box-shadow:0 4px 16px rgba(0,0,0,.08);overflow:hidden">'
+      +'<div style="padding:13px 15px;display:flex;gap:9px;align-items:flex-start">'
+      +'<span style="display:flex;color:var(--pu);flex-shrink:0;margin-top:1px">'+sparkIcon()+'</span>'
+      +'<div style="flex:1;font-size:13px;color:var(--t1);line-height:1.55">'+act.response+'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;padding:0 13px 13px">'
+      +'<button class="btn btn-k" style="padding:11px;font-size:13px;border-radius:12px" onclick="applyNL()">Confirm</button>'
+      +'<button style="padding:11px 18px;font-size:13px;font-weight:600;border:none;border-radius:12px;background:#F3F4F6;color:var(--t2);cursor:pointer" onclick="cancelNL()">Cancel</button>'
+      +'</div></div>';
+  }
+  // ── Expanded input: pill field with inline send + quiet suggestion chips ──
+  var examples=["Add 8 hrs PTO for Aisha","What's my bank balance?","Move payment to today"];
+  var hasText=!!S.nlInput;
+  return '<div style="background:#fff;border:1.5px solid #E8EAED;border-radius:20px;box-shadow:0 4px 16px rgba(0,0,0,.08);padding:8px 8px 8px 14px;display:flex;flex-direction:column;gap:9px">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<span style="display:flex;color:var(--pu);flex-shrink:0">'+sparkIcon()+'</span>'
+    +'<input id="nl-in" autofocus oninput="S.nlInput=this.value;syncNLSend()" onkeydown="if(event.key===\'Enter\')submitNL();if(event.key===\'Escape\')cancelNL()" value="'+S.nlInput+'" placeholder="Ask anything…" style="flex:1;border:none;outline:none;font-size:14px;color:var(--t1);background:none;min-width:0">'
+    +'<button id="nl-send" onclick="'+(hasText?'submitNL()':'cancelNL()')+'" style="flex-shrink:0;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(hasText?'var(--navy)':'#F3F4F6')+';color:'+(hasText?'#fff':'var(--t3)')+';transition:background .15s">'+(hasText?sendIcon():'✕')+'</button>'
+    +'</div>'
+    +'<div id="nl-chips" style="display:flex;gap:6px;flex-wrap:wrap;'+(hasText?'display:none':'')+'">'+examples.map(function(ex){return '<button onclick="S.nlInput=\''+ex.replace(/'/g,"\\'")+'\';submitNL()" style="background:none;border:1px solid #E8EAED;border-radius:16px;padding:5px 11px;font-size:11px;color:var(--t3);cursor:pointer">'+ex+'</button>';}).join('')+'</div>'
+    +'</div>';
+}
+// Toggle send-button affordance + hide chips as the user types, without a full re-render
+function syncNLSend(){
+  var inp=document.getElementById('nl-in'); if(!inp) return;
+  var has=!!inp.value;
+  var btn=document.getElementById('nl-send');
+  var chips=document.getElementById('nl-chips');
+  if(btn){
+    btn.style.background=has?'var(--navy)':'#F3F4F6';
+    btn.style.color=has?'#fff':'var(--t3)';
+    btn.innerHTML=has?sendIcon():'✕';
+    btn.setAttribute('onclick', has?'submitNL()':'cancelNL()');
+  }
+  if(chips){ chips.style.display=has?'none':'flex'; }
+}
+function sparkIcon(){return '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.8a2 2 0 001.3 1.3L21 11l-5.8 1.9a2 2 0 00-1.3 1.3L12 20l-1.9-5.8a2 2 0 00-1.3-1.3L3 11l5.8-1.9a2 2 0 001.3-1.3L12 2z"/></svg>';}
+function sendIcon(){return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="6 11 12 5 18 11"/></svg>';}
+// Shared line-icon glyphs — replaces emoji throughout the app with icons in
+// the same stroke-based style as ico()/chatIcon()/micIcon().
+function iconGlyph(name,color,size){
+  size=size||16; color=color||'currentColor';
+  var S='<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+  if(name==='bell') return S+'<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>';
+  if(name==='calendar') return S+'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+  if(name==='alert') return S+'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  if(name==='fileChart') return S+'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="9" y2="18"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="15" y1="9" x2="15" y2="18"/></svg>';
+  if(name==='users') return S+'<circle cx="9" cy="7" r="3"/><path d="M2 19c0-3.3 3-6 7-6s7 2.7 7 6"/><circle cx="17" cy="8" r="2.5"/><path d="M22 19c0-2.6-2-4.7-4.5-5.4"/></svg>';
+  if(name==='dollar') return S+'<line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+  if(name==='bank') return S+'<path d="M3 21h18"/><path d="M5 21V10M10 21V10M14 21V10M19 21V10"/><path d="M2 10l10-6 10 6"/></svg>';
+  if(name==='check') return S+'<polyline points="20 6 9 17 4 12"/></svg>';
+  return '';
+}
+function submitNL(){
+  if(!S.nlInput) return;
+  S.nlPendingAction=matchNLIntent(S.nlInput);
+  S.nlStage='confirm';
+  re();
+}
+function applyNL(){
+  var act=S.nlPendingAction;
+  if(act&&act.action) act.action();
+  S.nlActive=false; S.nlStage='input'; S.nlInput=''; S.nlPendingAction=null;
+  re();
+}
+function cancelNL(){
+  S.nlActive=false; S.nlStage='input'; S.nlInput=''; S.nlPendingAction=null;
+  re();
+}
+
+function bankCardHome(){
+  return '<div class="card cp tap" onclick="go(\'bankBalance\')">'
+    +'<div class="sl" style="margin-bottom:6px">Bank balance</div>'
+    +'<div class="s-val" style="font-size:22px">'+fmt(BANK.balance)+'</div>'
+    +'<div style="font-size:11px;color:var(--t3);margin-top:6px">Covers '+TOTALS.payDate.split(',')[0]+' payroll ('+fmt(BANK.upcomingDebit)+')</div>'
+    +'</div>';
+}
+function home(){
+  var isFirst=S.homeState==='first';
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +homeHeader()
+  +(isFirst?'':segmentedControl())
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:12px 18px 14px;display:flex;flex-direction:column;'+(isFirst?'justify-content:center;':'')+'gap:12px">'
+  +(isFirst?homeFirstBody():(S.homeTab==='past'?pastPayrollsBody():homeUpcomingBody()))
+  +'</div>'
+  +'<div style="padding:10px 18px 14px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'+nlDock()+'</div>'
+  +'</div>';
+}
+function homeUpcomingBody(){
+  if(S.homeState==='attention') return homeAttentionBody();
+  return homeReadyBody();
+}
+// Wireframe tag: 1a
+function homeReadyBody(){
+  return '<div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--g)"></div><span style="font-size:12px;font-weight:600;color:var(--gt)">Payroll on track</span><span style="font-size:11px;color:var(--t4)">· checked now</span></div>'
+  +'<div style="font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.02em">All set for now.</div>'
+  +'<div class="card cp tap" onclick="go(\'payrollReview\')">'
+    +'<div class="sl" style="margin-bottom:8px">'+TOTALS.period+' · '+TOTALS.employees+' employees</div>'
+    +'<div class="stat2" style="margin-bottom:10px"><div><div class="s-val">'+fmt(TOTALS.gross)+'</div><div class="s-lbl">gross</div></div><div><div class="s-val">'+TOTALS.hours+' hrs</div><div class="s-lbl">total</div></div></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:var(--t2)">Ready to run · '+TOTALS.payDate.split(',')[0]+'</span><span class="badge-g">Ready</span></div>'
+  +'</div>'
+  +aiInsightCard()
+  +bankCardHome()
+  +homeTiles(0);
+}
+// Wireframe tag: 1b
+function homeAttentionBody(){
+  var ddOpen=!S.ddResolved, otOpen=!S.otResolved;
+  var openCount=(ddOpen?1:0)+(otOpen?1:0);
+  return '<div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--a)"></div><span style="font-size:12px;font-weight:600;color:var(--at)">Payroll paused</span><span style="font-size:11px;color:var(--t4)">· '+openCount+' item'+(openCount===1?'':'s')+' to clear</span></div>'
+  +'<div style="font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.02em">Action needed.</div>'
+  +'<div class="card cp tap" onclick="go(\'exceptions\')" style="border:1.5px solid var(--abr)">'
+    +'<div class="sl" style="margin-bottom:8px">'+TOTALS.period+' · '+TOTALS.employees+' employees</div>'
+    +'<div class="stat2" style="margin-bottom:10px"><div><div class="s-val">'+fmt(TOTALS.gross)+'</div><div class="s-lbl">gross</div></div><div><div class="s-val">'+TOTALS.hours+' hrs</div><div class="s-lbl">total</div></div></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:var(--t2)">'+openCount+' item'+(openCount===1?'':'s')+' need'+(openCount===1?'s':'')+' your review</span><span class="badge-a">Needs attention</span></div>'
+  +'</div>'
+  +bankCardHome()
+  +homeTiles(openCount);
+}
+// Wireframe tag: 1c
+function homeFirstBody(){
+  return '<div style="padding:4px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">'
+    +'<div style="font-size:25px;font-weight:800;color:var(--t1);letter-spacing:-.02em;line-height:1.3">Let\'s set up<br>your first payroll</div>'
+    +'<div style="font-size:14px;color:var(--t3);line-height:1.6;max-width:270px">In just a few steps we\'ll build out your team and set up how you want hours to be collected.</div>'
+    +'<button class="btn btn-k" style="max-width:230px;width:100%;border-radius:26px;padding:15px 0;margin-top:8px" onclick="S.setupFlow=true;go(\'connectBankStep\')">Get started</button>'
+  +'</div>';
+}
+// ── First-payroll setup wizard, step 1 of 2: connect a bank ──
+function connectBankStep(){
+  var body;
+  if(S.bankConnected){
+    body='<div class="card cp" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 16px">'
+      +'<div style="width:40px;height:40px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--g)">✓</div>'
+      +'<div style="font-size:15px;font-weight:700;color:var(--t1)">Bank connected</div>'
+      +'<div style="font-size:12px;color:var(--t3)">'+BANK.name+'</div>'
+      +'</div>';
+  } else if(S.bankConnectStage==='connecting'){
+    body='<div class="card cp" style="display:flex;align-items:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin .75s linear infinite;flex-shrink:0"><path d="M12 2a10 10 0 0110 10" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round"/></svg><span style="font-size:13px;color:var(--t2)">Connecting to '+(S.connectingBank||'your bank')+'…</span></div>';
+  } else {
+    var banks=['Chase','Bank of America','Wells Fargo','Capital One'];
+    body='<input class="inp" placeholder="Search for your bank" style="margin-bottom:2px">'
+      +banks.map(function(b){return '<div class="row tap" onclick="connectBankStepChoose(\''+b+'\')"><span style="flex:1;font-size:13px;font-weight:600">'+b+'</span><span class="chevron">›</span></div>';}).join('');
+  }
+  return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('home','Connect your bank','Needed before payroll can run','Step 1 of 2')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
+  +body
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn '+(S.bankConnected?'btn-k':'btn-o')+'" '+(S.bankConnected?'':'disabled')+' onclick="'+(S.bankConnected?'go(\'collectMethod\')':'')+'">Continue</button>'
+  +'</div></div>';
+}
+function connectBankStepChoose(name){
+  S.connectingBank=name;
+  S.bankConnectStage='connecting';
+  re();
+  setTimeout(function(){ S.bankConnected=true; re(); },1200);
+}
+// "Past" tab content — tucked-in Previous Payrolls list (was screen 11a)
+function pastPayrollsBody(){
+  return PAY_HIST.map(function(p,i){
+    return '<div class="row tap" onclick="S.historySelected='+i+';go(\'payHistoryDetail\')"><div style="flex:1"><div style="font-size:13px;font-weight:600">'+p.date+' · '+fmt(p.amount)+'</div><div style="font-size:11px;color:var(--t3)">'+p.label+' · '+p.emp+' employees</div></div>'
+    +'<span class="'+(p.issues?'badge-a':'badge-g')+'">'+(p.issues?p.issues+' auto-fix':'Paid')+'</span></div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// 2 — COLLECT HOURS (path 1c only)
+// ══════════════════════════════════════════════════════════
+function subHeader(back,title,sub,eyebrow){
+  return '<div class="ph"><div style="display:flex;align-items:center;gap:10px">'
+    +'<button class="bk" onclick="go(\''+back+'\')">←</button>'
+    +'<div style="flex:1">'+(eyebrow?'<div style="font-size:10px;font-weight:700;color:var(--pu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px">'+eyebrow+'</div>':'')+'<div class="pt">'+title+'</div>'+(sub?'<div class="ps">'+sub+'</div>':'')+'</div>'
+    +'</div></div>';
+}
+function collectMethod(){
+  function card(val,title,sub){
+    var sel=S.collectMethod===val;
+    return '<div class="tap" onclick="S.collectMethod=\''+val+'\';re()" style="padding:14px 15px;border-radius:14px;border:1.5px solid '+(sel?'var(--navy)':'#E5E7EB')+';background:'+(sel?'#F8F9FA':'#fff')+';display:flex;align-items:center;gap:11px">'
+      +'<div class="radio" style="'+(sel?'border-color:var(--navy);background:var(--navy)':'')+'">'+(sel?'<span style="width:5px;height:5px;border-radius:50%;background:#fff;display:block"></span>':'')+'</div>'
+      +'<div><div style="font-size:14px;font-weight:600;color:var(--t1)">'+title+'</div><div style="font-size:11px;color:var(--t3);margin-top:2px">'+sub+'</div></div></div>';
+  }
+  var uploading=S.collectMethod==='upload'&&S.collectStage!=='idle';
+  var footer;
+  if(uploading&&S.collectStage==='loading'){
+    footer='<div class="card cp" style="display:flex;align-items:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin .75s linear infinite;flex-shrink:0"><path d="M12 2a10 10 0 0110 10" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round"/></svg><span style="font-size:13px;color:var(--t2)">Reading your register…</span></div>';
+  } else if(uploading&&S.collectStage==='done'){
+    footer='<div class="card cp" style="display:flex;align-items:center;gap:10px;background:var(--gb);border:1px solid var(--gbr)"><span style="font-size:16px;color:var(--g)">✓</span><span style="font-size:13px;color:var(--gt);font-weight:600">Register read — 12 employees found</span></div>';
+  } else {
+    footer='<button class="btn '+(S.collectMethod?'btn-k':'btn-o')+'" '+(S.collectMethod?'':'disabled')+' onclick="'+(S.collectMethod?'continueCollect()':'')+'">Continue</button>';
+  }
+  return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +(S.setupFlow
+    ? subHeader('connectBankStep','People and hours',null,'Step 2 of 2')
+    : subHeader('home','People and hours','Tag: 2a'))
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
+  +'<div style="font-size:13px;color:var(--t3);margin-bottom:2px">How do you want to bring in hours for this period?</div>'
+  +card('upload','Upload a payroll register','A prior register — .csv, .xlsx, or .pdf')
+  +card('smart','Use smart default values','Standard hours for everyone, edit what changed')
+  +card('sheets','Connect a spreadsheet','Sync hours from Google Sheets automatically')
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +footer
+  +'</div></div>';
+}
+function continueCollect(){
+  if(S.collectMethod==='upload'){ startUploadAnim(); }
+  else if(S.collectMethod==='sheets'){ go('connectSheet'); }
+  else { S.employeesLoaded=true; S.editHoursOpenId=null; go('reviewHours'); } // smart defaults: team assumed on file
+}
+// Runs in place on 2a: loading → done → advance to 2c (page 2b removed).
+function startUploadAnim(){
+  S.collectStage='loading';re();
+  setTimeout(function(){S.collectStage='done';S.employeesLoaded=true;re();
+    setTimeout(function(){S.editHoursOpenId=null;go('reviewHours');},700);
+  },1600);
+}
+function connectSheet(){
+  var stage=S.collectStage;
+  var steps=[
+    {label:'Connecting to Google Sheets',done:true},
+    {label:'Found file · Prism Inc – Hours.xlsx',done:stage!=='idle'},
+    {label:'Syncing '+TOTALS.employees+' employees…',done:stage==='done'},
+    {label:'Sync complete',done:stage==='done'},
+  ];
+  return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('collectMethod','Connect spreadsheet','Tag: 2d')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="card cp" style="display:flex;align-items:center;gap:10px"><span style="display:flex;color:var(--t2)">'+iconGlyph('fileChart','currentColor',20)+'</span><span style="font-size:13px;font-weight:600;color:var(--t1)">Prism Inc – Hours.xlsx</span></div>'
+  +steps.map(function(st,i){
+    var active=stage!=='idle'&&(i<2||stage==='done');
+    return '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:'+(active?'var(--t2)':'var(--t4)')+'"><span style="color:'+(active?'var(--g)':'#D1D5DB')+'">'+(active?'✓':'○')+'</span>'+st.label+'</div>';
+  }).join('')
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +(stage==='idle'?'<button class="btn btn-k" onclick="startSheetSync()">Connect</button>':'<button class="btn btn-o" disabled>Continue (syncing…)</button>')
+  +'</div></div>';
+}
+function startSheetSync(){
+  S.collectStage='loading';re();
+  setTimeout(function(){S.collectStage='done';S.employeesLoaded=true;re();
+    setTimeout(function(){S.editHoursOpenId=null;go('reviewHours');},700);
+  },1600);
+}
+function reviewHours(){
+  function empRow(e){
+    var open=S.editHoursOpenId===e.id;
+    return '<div class="card cp" style="margin-bottom:8px">'
+      +'<div class="tap" onclick="S.editHoursOpenId=S.editHoursOpenId===\''+e.id+'\'?null:\''+e.id+'\';re()" style="display:flex;align-items:center;gap:10px">'
+      +av(e.id,isPending(e),34)
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.role+'</div></div>'
+      +'<div style="text-align:right">'+(e.type==='Hourly'?'<div style="font-size:11px;font-weight:700;color:var(--t2)">'+empHoursTotal(e)+' hrs</div>':'')+'<div id="row-gross-'+e.id+'" style="font-size:12px;font-weight:700;color:var(--t1)">'+fmt(empGross(e))+'</div></div>'
+      +'<span class="chevron" style="margin-left:8px">'+(open?'▲':'▼')+'</span>'
+      +'</div>'
+      +(open?('<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.05)">'+setupEmployeeControls(e.id)+'</div>'):'')
+      +'</div>';
+  }
+  var hourly=EMP.filter(function(e){return e.type==='Hourly';});
+  var salaried=EMP.filter(function(e){return e.type!=='Hourly';});
+  function section(label,list){
+    if(!list.length) return '';
+    return '<div class="sl" style="margin:4px 0 8px">'+label+' · '+list.length+'</div>'+list.map(empRow).join('');
+  }
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('collectMethod','Payroll data')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 8px">'
+  +'<div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:8px">People and hours</div>'
+  +'<p style="margin:0 0 10px;font-size:13px;color:var(--t3);line-height:1.5">We found <b>'+EMP.length+' employees</b> and imported the hourly data from your last payroll. Overtime hours won\'t be added to your payroll template.</p>'
+  +'<div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:16px">'+EMP.length+' employees · '+TOTALS.hours+' hrs · '+fmt(TOTALS.gross)+' gross</div>'
+  +section('Hourly',hourly)
+  +'<div style="height:12px"></div>'
+  +section('Salaried',salaried)
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn btn-k" onclick="S.hoursCollected=true;go(\'payrollReview\')">Add to payroll</button>'
+  +'</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// SHARED: 4-field hour-type stepper (Hourly/PTO/Holiday/OT)
+// Used by both Review Hours (2c) and Edit Hours (3d).
+// ══════════════════════════════════════════════════════════
+var STEP_UNIT={hourly:1,pto:1,holiday:1,ot:1};
+function stepperGrid(empId,onchange){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return '';
+  var h=e.hrs;
+  function row(field,label,isOT){
+    return '<div class="stepper'+(isOT?' ot':'')+'">'
+      +'<span class="st-lbl">'+label+(isOT?' (1.5×)':'')+'</span>'
+      +'<div class="st-ctl">'
+      +'<button class="stepbtn" onclick="adjHour(\''+empId+'\',\''+field+'\',-1,\''+onchange+'\')">–</button>'
+      +'<span class="st-val">'+h[field]+'</span>'
+      +'<button class="stepbtn" onclick="adjHour(\''+empId+'\',\''+field+'\',1,\''+onchange+'\')">+</button>'
+      +'</div></div>';
+  }
+  return '<div class="card cp">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+av(e.id,false,32)+'<div><div style="font-size:13px;font-weight:700;color:var(--t1)">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.rate+'</div></div></div>'
+    +row('hourly','Hourly',false)
+    +row('pto','PTO',false)
+    +row('holiday','Holiday',false)
+    +row('ot','OT',true)
+    +'<div style="text-align:right;font-size:12px;color:var(--t3);margin-top:6px">'+fmt(empGross(e))+' gross</div>'
+    +'</div>';
+}
+function adjHour(empId,field,delta,onchange){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return;
+  e.hrs[field]=Math.max(0,(e.hrs[field]||0)+delta);
+  if(onchange==='sheet'){
+    document.getElementById('sheet-content').innerHTML=editHoursSheetBody(empId);
+  } else {
+    re();
+  }
+}
+function editHoursSheetBody(empId){
+  return '<div style="padding:20px 20px 32px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:16px;font-weight:700">Edit hours</div><button onclick="hideSheet();re()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div>'
+    +stepperGrid(empId,'sheet')
+    +'<button class="btn btn-k" style="margin-top:12px" onclick="hideSheet();re()">Save</button>'
+    +'</div>';
+}
+function openEditHoursSheet(empId){
+  showSheet(editHoursSheetBody(empId));
+}
+
+// ══════════════════════════════════════════════════════════
+// 3 — PAYROLL REVIEW (shared endpoint for all 3 paths)
+// ══════════════════════════════════════════════════════════
+// SVG donut chart — segments: [{label, value, color}]. Center shows total + unit.
+// Horizontal stacked bar — one bar, segments proportional to value.
+function stackedBar(segments){
+  var total=segments.reduce(function(s,x){return s+x.value;},0)||1;
+  return '<div style="display:flex;width:100%;height:14px;border-radius:7px;overflow:hidden;background:#F1F2F4">'
+    +segments.map(function(seg){
+      var pct=seg.value/total*100;
+      return pct>0?'<div style="width:'+pct+'%;background:'+seg.color+'"></div>':'';
+    }).join('')
+    +'</div>';
+}
+// Wrapping legend chips under a bar — dot + label + value + share%.
+function barLegendChips(segments, unit){
+  var total=segments.reduce(function(s,x){return s+x.value;},0)||1;
+  return '<div style="display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:9px">'
+    +segments.map(function(seg){
+      var pct=Math.round(seg.value/total*100);
+      var valStr=unit==='$'?fmt(seg.value):seg.value+'h';
+      return '<div style="display:flex;align-items:center;gap:5px">'
+        +'<span style="width:8px;height:8px;border-radius:2px;background:'+seg.color+';flex-shrink:0"></span>'
+        +'<span style="font-size:11px;color:var(--t2)">'+seg.label+'</span>'
+        +'<span style="font-size:11px;font-weight:700;color:var(--t1)">'+valStr+'</span>'
+        +'<span style="font-size:10px;color:var(--t4)">'+pct+'%</span>'
+        +'</div>';
+    }).join('')
+    +'</div>';
+}
+function barBlock(title, segments, unit){
+  return '<div><div class="sl" style="margin-bottom:8px">'+title+'</div>'
+    +stackedBar(segments)
+    +barLegendChips(segments, unit)
+    +'</div>';
+}
+// Bar + legend with no title/label above it.
+function barOnly(segments, unit){
+  return '<div>'+stackedBar(segments)+barLegendChips(segments, unit)+'</div>';
+}
+// Headline gross/hours totals combined with the gross-by-type bar breakdown.
+function statsAndBarsCard(gross, hours, grossSegs){
+  return '<div class="card cp" style="display:flex;flex-direction:column;gap:16px">'
+    +'<div class="stat2"><div><div class="s-val">'+fmt(gross)+'</div><div class="s-lbl">gross</div></div><div><div class="s-val">'+hours+' hrs</div><div class="s-lbl">total</div></div></div>'
+    +barOnly(grossSegs, '$')
+    +'</div>';
+}
+function payrollReview(){
+  var taxDetail=['Federal withholding','FICA (employer + employee)','Illinois state withholding','Illinois SUI'].map(function(t,i){return '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--t2)"><span>'+t+'</span><span>'+fmt([4200,3100,1200,440][i])+'</span></div>';}).join('');
+  var dedDetail=['Health insurance','Dental','401(k) contributions'].map(function(t,i){return '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--t2)"><span>'+t+'</span><span>'+fmt([1880,180,520][i])+'</span></div>';}).join('');
+
+  // Category palette — OT stays amber (app-wide OT convention); others distinct.
+  var CAT={hourly:'#2563EB', pto:'#7C3AED', holiday:'#0D9488', ot:'#D97706'};
+
+  // Total hours (for the headline stat) — summed live from every employee's hours.
+  var hoursByType={hourly:0,pto:0,holiday:0,ot:0};
+  EMP.forEach(function(e){var h=e.hrs||{};hoursByType.hourly+=h.hourly||0;hoursByType.pto+=h.pto||0;hoursByType.holiday+=h.holiday||0;hoursByType.ot+=h.ot||0;});
+  var hoursTotal=hoursByType.hourly+hoursByType.pto+hoursByType.holiday+hoursByType.ot;
+
+  // Gross pay stratified by pay type (illustrative, ties to TOTALS.gross).
+  var grossSegs=[
+    {label:'Regular',value:36400,color:CAT.hourly},
+    {label:'PTO',value:780,color:CAT.pto},
+    {label:'Holiday',value:16528,color:CAT.holiday},
+    {label:'Overtime',value:612,color:CAT.ot},
+  ].filter(function(s){return s.value>0;});
+  var grossTotal=grossSegs.reduce(function(s,x){return s+x.value;},0);
+
+  var byType=[['Regular',grossSegs.find(function(s){return s.label==='Regular';})],['Overtime',grossSegs.find(function(s){return s.label==='Overtime';})],['PTO',grossSegs.find(function(s){return s.label==='PTO';})],['Holiday',grossSegs.find(function(s){return s.label==='Holiday';})]];
+  var typeRows=byType.filter(function(r){return r[1];}).map(function(r){return '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--t2)"><span>'+r[0]+'</span><span>'+fmt(r[1].value)+'</span></div>';}).join('');
+  function nestedToggle(id,title,amount,detail){
+    return '<div style="border-top:1px solid rgba(0,0,0,.05)">'
+      +'<div class="tap" onclick="var b=document.getElementById(\''+id+'\');var open=b.style.display!==\'none\';b.style.display=open?\'none\':\'block\';document.getElementById(\''+id+'-chev\').textContent=open?\'▼\':\'▲\'" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">'
+      +'<span style="font-size:12px;color:var(--t2)">'+title+'</span>'
+      +'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;color:var(--t2)">'+fmt(amount)+'</span><span class="chevron" id="'+id+'-chev" style="font-size:11px">▼</span></div>'
+      +'</div>'
+      +'<div id="'+id+'" style="display:none;padding:0 0 6px 8px">'+detail+'</div>'
+      +'</div>';
+  }
+  return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('home','Payroll · '+TOTALS.period,'Tag: 3a')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px 8px;display:flex;flex-direction:column;gap:12px">'
+  +'<div><span class="badge-g">Ready to run</span><div style="font-size:12px;color:var(--t3);margin-top:6px">Scheduled for '+TOTALS.payDate+'</div></div>'
+  +statsAndBarsCard(TOTALS.gross, hoursTotal, grossSegs)
+  +'<div class="row tap" onclick="S.editHoursOpenId=null;go(\'payrollEmployeeList\')"><span style="flex:1;font-size:13px;font-weight:600">'+TOTALS.employees+' employees</span><span style="font-size:11px;color:var(--t3);margin-right:2px">Edit hours</span><span class="chevron">›</span></div>'
+  +'<div style="padding:0 13px">'
+  +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700;color:var(--t1)">Totals</span><span style="font-size:14px;font-weight:700;color:var(--t1)">'+fmt(TOTALS.employerCost)+'</span></div>'
+  +'<div style="margin-top:10px">'+typeRows+'</div>'
+  +nestedToggle('bd-tax','Taxes',TOTALS.taxes,taxDetail)
+  +nestedToggle('bd-ded','Deductions',TOTALS.deductions,dedDetail)
+  +'<div style="display:flex;justify-content:space-between;padding:7px 0 0;font-size:12px;font-weight:700;color:var(--t1);border-top:1px solid rgba(0,0,0,.05);margin-top:4px"><span>Employer cost</span><span>'+fmt(TOTALS.employerCost)+'</span></div>'
+  +'</div>'
+  +'<div class="card cp tap" onclick="S.complianceContext=null;go(\'complianceDetail\',{from:\'payrollReview\'})" style="display:flex;align-items:center;gap:11px;margin-top:12px">'
+    +'<span style="width:28px;height:28px;border-radius:50%;background:var(--gb);color:var(--g);font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</span>'
+    +'<span style="flex:1;font-size:13px;font-weight:600;color:var(--t1)">All compliance checks passed</span>'
+    +'<span class="chevron">›</span>'
+  +'</div>'
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn btn-k" onclick="go(\'finalApproval\')">Review</button>'
+  +'</div></div>';
+}
+function collapsible(id,title,amount,detail){
+  return '<div class="card cp">'
+    +'<div class="tap" onclick="var b=document.getElementById(\''+id+'\');var open=b.style.display!==\'none\';b.style.display=open?\'none\':\'block\';document.getElementById(\''+id+'-chev\').textContent=open?\'▼\':\'▲\'" style="display:flex;justify-content:space-between;align-items:center">'
+    +'<span style="font-size:13px;font-weight:700;color:var(--t1)">'+title+'</span>'
+    +'<div style="display:flex;align-items:center;gap:7px"><span style="font-size:14px;font-weight:700;color:var(--t1)">'+fmt(amount)+'</span><span class="chevron" id="'+id+'-chev" style="margin-left:0">▼</span></div>'
+    +'</div>'
+    +'<div id="'+id+'" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid rgba(0,0,0,.05)">'+detail+'</div>'
+    +'</div>';
+}
+// Employee list for this payroll — hours + total pay per employee.
+// Tapping a row expands it inline to edit that person's hours by type.
+function payrollEmployeeList(){
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('payrollReview',TOTALS.employees+' employees',TOTALS.period)
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 8px">'
+  +'<div class="card cp" style="background:#F5F3FF;border:1px solid #DDD6FE;display:flex;gap:8px;align-items:flex-start;margin-bottom:12px"><span class="badge-ai">✦ AI</span><p style="margin:0;font-size:12px;color:#3B0764;line-height:1.6">Tap anyone to enter or adjust their hours by type. Everything else carries forward from last period.</p></div>'
+  +EMP.map(function(e){
+    var open=S.editHoursOpenId===e.id;
+    return '<div class="card cp" style="margin-bottom:8px">'
+      +'<div class="tap" onclick="S.editHoursOpenId=S.editHoursOpenId===\''+e.id+'\'?null:\''+e.id+'\';re()" style="display:flex;align-items:center;gap:10px">'
+      +av(e.id,isPending(e),34)
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.role+'</div></div>'
+      +'<div style="text-align:right">'+(e.type==='Hourly'?'<div style="font-size:11px;font-weight:700;color:var(--t2)">'+empHoursTotal(e)+' hrs</div>':'')+'<div id="row-gross-'+e.id+'" style="font-size:12px;font-weight:700;color:var(--t1)">'+fmt(empGross(e))+'</div></div>'
+      +'<span class="chevron" style="margin-left:8px">'+(open?'▲':'▼')+'</span>'
+      +'</div>'
+      +(open?('<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.05)">'+stepperGridInline(e.id)+'</div>'):'')
+      +'</div>';
+  }).join('')
+  +'</div></div>';
+}
+function complianceDetail(){
+  var ctx=S.complianceContext;
+  var rec=(ctx!=null)?PAY_HIST[ctx]:null;
+  var gross=rec?rec.amount:TOTALS.gross;
+  var period=rec?rec.label:TOTALS.period;
+  var emp=rec?rec.emp:TOTALS.employees;
+  var hasIssue=rec?!!rec.issues:false;
+  var verifiedWord=rec?'confirmed':'verified';
+  var score=hasIssue?94:97;
+  var checks=[
+    {name:'Tax rate tables',note:'Federal and Illinois tax tables current for 2026 Q2.'},
+    {name:'Bank routing',note:'12 destinations verified against Fed Reserve ACH.'},
+    {name:'Employee classification',note:'7 salaried (exempt), 5 hourly (non-exempt) — all match pay structures.'},
+    {name:'OT thresholds',note:hasIssue?rec.iNote+' — resolved automatically.':'Marcus T. logged 4h OT at 1.5× — no one else exceeded 40h.'},
+    {name:'Deduction reconciliation',note:'Health, dental, and 401(k) deductions match plan elections for all 12 employees.'},
+    {name:'Filing status integrity',note:'W-4 filing statuses on file for all employees — no mismatches found.'},
+    {name:'Direct deposit routing',note:'All active accounts validated — no pending or missing destinations.'},
+    {name:'Jurisdictional compliance',note:'Illinois minimum wage and overtime rules — no violations.'},
+    {name:'Pay schedule lock',note:'Bi-weekly schedule locked for this period — no changes pending.'},
+  ];
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader(S.from||'payrollReview','Compliance','Tag: 3a')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:12px">'
+  +'<div style="background:var(--gb);border:1px solid var(--gbr);border-radius:16px;padding:22px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px">'
+    +'<div style="font-size:20px;color:var(--g)">✓</div>'
+    +'<div style="font-size:22px;font-weight:800;color:var(--gt);letter-spacing:-.02em">'+fmt(gross)+' '+verifiedWord+'</div>'
+    +'<div style="font-size:12px;color:var(--gt);opacity:.75">'+period+' · '+emp+' employees · Illinois</div>'
+    +'<div style="margin-top:6px;display:inline-flex;align-items:center;gap:7px;background:#fff;border-radius:20px;padding:6px 14px">'
+      +'<span style="width:20px;height:20px;border-radius:50%;background:var(--g);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">'+score+'</span>'
+      +'<span style="font-size:12px;font-weight:600;color:var(--t1)">Confidence score</span>'
+    +'</div>'
+  +'</div>'
+  +'<div class="card cp" style="background:#F5F3FF;border:1px solid #DDD6FE">'
+    +'<div style="font-size:10px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Key insight</div>'
+    +'<p style="margin:0;font-size:12px;color:#3B0764;line-height:1.6">Health insurance rate increase was auto-applied from the carrier feed — no manual entry required.</p>'
+  +'</div>'
+  +'<div class="sl" style="margin:4px 0 2px">9 conditions verified</div>'
+  +checks.map(function(c,i){
+    return '<div class="tap" onclick="var b=document.getElementById(\'ck'+i+'\');var open=b.style.display!==\'none\';b.style.display=open?\'none\':\'block\';document.getElementById(\'ck'+i+'-chev\').textContent=open?\'▼\':\'▲\'" style="padding:12px 0;'+(i>0?'border-top:1px solid rgba(0,0,0,.06);':'')+'">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<span style="width:24px;height:24px;border-radius:50%;background:var(--gb);color:var(--g);font-size:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</span>'
+    +'<span style="font-size:13px;font-weight:600;color:var(--t1);flex:1">'+c.name+'</span>'
+    +'<span class="chevron" id="ck'+i+'-chev">▼</span>'
+    +'</div>'
+    +'<div id="ck'+i+'" style="display:none;margin-top:6px;padding-left:34px;font-size:11px;color:var(--t3);line-height:1.5">'+c.note+'</div>'
+    +'</div>';
+  }).join('')
+  +'</div></div>';
+}
+// Inline (non-sheet) variant of the stepper grid — used by payrollEmployeeList
+// accordion (and previously the standalone Edit Hours screen, now removed).
+function stepperGridInline(empId){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return '';
+  var h=e.hrs;
+  function row(field,label,isOT){
+    return '<div class="stepper'+(isOT?' ot':'')+'">'
+      +'<span class="st-lbl">'+label+(isOT?' (1.5×)':'')+'</span>'
+      +'<div class="st-ctl">'
+      +'<button class="stepbtn" onclick="event.stopPropagation();adjHourInline(\''+empId+'\',\''+field+'\',-1)">–</button>'
+      +'<span class="st-val">'+h[field]+'</span>'
+      +'<button class="stepbtn" onclick="event.stopPropagation();adjHourInline(\''+empId+'\',\''+field+'\',1)">+</button>'
+      +'</div></div>';
+  }
+  return row('hourly','Hourly',false)+row('pto','PTO',false)+row('holiday','Holiday',false)+row('ot','OT',true)
+    +'<div style="text-align:right;font-size:12px;color:var(--t3);margin-top:6px">'+fmt(empGross(e))+' gross</div>';
+}
+// ── Payroll-setup-only controls (page 2c). Distinct from stepperGridInline
+// above, which is the real hours-editing workflow used elsewhere (3a's
+// employee list, OT-adjust from exceptions) and must not be touched by this.
+// Hourly: default hours + hourly rate + overtime rate (no PTO/Holiday/OT here).
+// Salaried: PTO only + annual salary.
+function setupEmployeeControls(empId){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return '';
+  function stepperRow(field,label){
+    var h=e.hrs;
+    return '<div class="stepper">'
+      +'<span class="st-lbl">'+label+'</span>'
+      +'<div class="st-ctl">'
+      +'<button class="stepbtn" onclick="event.stopPropagation();adjHourInline(\''+empId+'\',\''+field+'\',-1)">–</button>'
+      +'<span class="st-val">'+h[field]+'</span>'
+      +'<button class="stepbtn" onclick="event.stopPropagation();adjHourInline(\''+empId+'\',\''+field+'\',1)">+</button>'
+      +'</div></div>';
+  }
+  function rateInput(labelText,value,suffix,handler,inputId){
+    return '<div style="margin-top:8px"><span class="lbl" style="margin-bottom:5px">'+labelText+'</span>'
+      +'<div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;overflow:hidden" onclick="event.stopPropagation()">'
+      +'<span style="padding:0 10px;font-size:14px;color:var(--t3)">$</span>'
+      +'<input type="number" '+(inputId?'id="'+inputId+'" ':'')+'value="'+value+'" oninput="'+handler+'" style="flex:1;border:none;padding:10px 0;font-size:14px;font-weight:600;color:var(--t1);outline:none;background:none">'
+      +'<span style="padding:0 10px;font-size:12px;color:var(--t3)">'+suffix+'</span>'
+      +'</div></div>';
+  }
+  function otCombinedControl(multiplier,rate){
+    return '<div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">'
+      +'<button class="stepbtn" style="flex-shrink:0" onclick="event.stopPropagation();adjOtMultiplier(\''+empId+'\',-0.1)">–</button>'
+      +'<span id="ot-mult-'+empId+'" style="font-size:13px;font-weight:700;color:var(--t1);min-width:26px;text-align:center;flex-shrink:0">'+multiplier.toFixed(1)+'×</span>'
+      +'<button class="stepbtn" style="flex-shrink:0" onclick="event.stopPropagation();adjOtMultiplier(\''+empId+'\',0.1)">+</button>'
+      +'<div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;height:38px;padding:0 8px;margin-left:4px;flex-shrink:0">'
+        +'<span style="font-size:13px;color:var(--t3)">$</span>'
+        +'<input type="number" id="ot-rate-input-'+empId+'" value="'+rate+'" oninput="adjOtRateInline(\''+empId+'\',this.value)" style="width:3ch;border:none;padding:0 2px;font-size:14px;font-weight:600;color:var(--t1);outline:none;background:none">'
+      +'</div></div>';
+  }
+  if(e.type!=='Hourly'){
+    var annual=parseFloat((e.rate||'0').replace(/[^0-9.]/g,''))||0;
+    var perPeriod=Math.round(annual/26);
+    return '<div style="display:flex;gap:8px">'
+      +'<div style="flex:1;min-width:0"><span class="lbl" style="margin-bottom:5px">Annual salary</span>'
+        +'<div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;overflow:hidden;height:38px;padding:0 8px" onclick="event.stopPropagation()">'
+        +'<span style="font-size:13px;color:var(--t3)">$</span>'
+        +'<input type="number" id="sal-annual-input-'+empId+'" value="'+annual+'" oninput="adjSalaryInline(\''+empId+'\',this.value)" style="flex:1;min-width:0;width:0;border:none;padding:0 4px;font-size:14px;font-weight:600;color:var(--t1);outline:none;background:none">'
+        +'<span style="font-size:11px;color:var(--t3)">/yr</span>'
+        +'</div></div>'
+      +'<div style="flex:1;min-width:0"><span class="lbl" style="margin-bottom:5px">Per pay period</span>'
+        +'<div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;overflow:hidden;height:38px;padding:0 8px" onclick="event.stopPropagation()">'
+        +'<span style="font-size:13px;color:var(--t3)">$</span>'
+        +'<input type="number" id="sal-period-input-'+empId+'" value="'+perPeriod+'" oninput="adjSalaryPerPeriodInline(\''+empId+'\',this.value)" style="flex:1;min-width:0;width:0;border:none;padding:0 4px;font-size:14px;font-weight:600;color:var(--t1);outline:none;background:none">'
+        +'<span style="font-size:11px;color:var(--t3)">/pd</span>'
+        +'</div></div>'
+      +'</div>';
+  }
+  var hourlyRate=parseFloat((e.rate||'0').replace(/[^0-9.]/g,''))||0;
+  if(e.otMultiplier==null){ e.otMultiplier=(e.otRate!=null&&hourlyRate>0)?Math.round((e.otRate/hourlyRate)*10)/10:1.5; }
+  if(e.otRate==null){ e.otRate=Math.round(hourlyRate*e.otMultiplier*100)/100; }
+  return stepperRow('hourly','Hours per pay period')
+    +'<div style="display:flex;gap:24px;margin-top:14px;flex-wrap:wrap">'
+    +'<div><span class="lbl" style="margin-bottom:6px">Hourly rate</span>'
+      +'<div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;height:38px;padding:0 8px" onclick="event.stopPropagation()">'
+      +'<span style="font-size:13px;color:var(--t3)">$</span>'
+      +'<input type="number" value="'+hourlyRate+'" oninput="adjHourlyRateInline(\''+empId+'\',this.value)" style="width:3ch;border:none;padding:0 2px;font-size:14px;font-weight:600;color:var(--t1);outline:none;background:none">'
+      +'</div></div>'
+    +'<div><span class="lbl" style="margin-bottom:6px">Overtime</span>'
+      +otCombinedControl(e.otMultiplier,e.otRate)
+      +'</div>'
+    +'</div>';
+}
+function adjSalaryInline(empId,value){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return;
+  var n=parseFloat(value)||0;
+  e.rate='$'+Math.round(n).toLocaleString()+'/yr';
+  var periodInput=document.getElementById('sal-period-input-'+empId);
+  if(periodInput) periodInput.value=Math.round(n/26);
+  var g=document.getElementById('sal-gross-'+empId);
+  if(g) g.textContent=fmt(empGross(e))+' gross this period';
+  var headline=document.getElementById('row-gross-'+empId);
+  if(headline) headline.textContent=fmt(empGross(e));
+}
+function adjSalaryPerPeriodInline(empId,value){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return;
+  var perPeriod=parseFloat(value)||0;
+  var annual=Math.round(perPeriod*26);
+  e.rate='$'+annual.toLocaleString()+'/yr';
+  var annualInput=document.getElementById('sal-annual-input-'+empId);
+  if(annualInput) annualInput.value=annual;
+  var g=document.getElementById('sal-gross-'+empId);
+  if(g) g.textContent=fmt(empGross(e))+' gross this period';
+  var headline=document.getElementById('row-gross-'+empId);
+  if(headline) headline.textContent=fmt(empGross(e));
+}
+function adjHourlyRateInline(empId,value){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return;
+  var n=parseFloat(value)||0;
+  e.rate='$'+n+'/hr';
+  var m=e.otMultiplier!=null?e.otMultiplier:1.5;
+  e.otRate=Math.round(n*m*100)/100;
+  var otInput=document.getElementById('ot-rate-input-'+empId);
+  if(otInput) otInput.value=e.otRate;
+  var g=document.getElementById('hr-gross-'+empId);
+  if(g) g.textContent=fmt(empGross(e))+' gross this period';
+  var headline=document.getElementById('row-gross-'+empId);
+  if(headline) headline.textContent=fmt(empGross(e));
+}
+function adjOtRateInline(empId,value){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return;
+  var hourlyRate=parseFloat((e.rate||'0').replace(/[^0-9.]/g,''))||0;
+  e.otRate=parseFloat(value)||0;
+  if(hourlyRate>0){
+    e.otMultiplier=Math.round((e.otRate/hourlyRate)*10)/10;
+    var multEl=document.getElementById('ot-mult-'+empId);
+    if(multEl) multEl.textContent=e.otMultiplier.toFixed(1)+'×';
+  }
+  var g=document.getElementById('hr-gross-'+empId);
+  if(g) g.textContent=fmt(empGross(e))+' gross this period';
+  var headline=document.getElementById('row-gross-'+empId);
+  if(headline) headline.textContent=fmt(empGross(e));
+}
+function adjOtMultiplier(empId,delta){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return;
+  var hourlyRate=parseFloat((e.rate||'0').replace(/[^0-9.]/g,''))||0;
+  var m=(e.otMultiplier!=null?e.otMultiplier:1.5)+delta;
+  m=Math.max(1,Math.round(m*10)/10);
+  e.otMultiplier=m;
+  e.otRate=Math.round(hourlyRate*m*100)/100;
+  var multEl=document.getElementById('ot-mult-'+empId);
+  if(multEl) multEl.textContent=m.toFixed(1)+'×';
+  var otInput=document.getElementById('ot-rate-input-'+empId);
+  if(otInput) otInput.value=e.otRate;
+  var g=document.getElementById('hr-gross-'+empId);
+  if(g) g.textContent=fmt(empGross(e))+' gross this period';
+  var headline=document.getElementById('row-gross-'+empId);
+  if(headline) headline.textContent=fmt(empGross(e));
+}
+function adjHourInline(empId,field,delta){
+  var e=EMP.find(function(x){return x.id===empId;});
+  if(!e)return;
+  e.hrs[field]=Math.max(0,(e.hrs[field]||0)+delta);
+  re();
+}
+function finalApproval(){
+  function row(icon,iconBg,iconColor,label,value,isFirst){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;'+(isFirst?'':'border-top:1px solid rgba(0,0,0,.06);')+'">'
+      +'<div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:8px;background:'+iconBg+';color:'+iconColor+';font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+icon+'</span><span style="font-size:12px;color:var(--t3)">'+label+'</span></div>'
+      +'<span style="font-size:13px;font-weight:700;color:var(--t1)">'+value+'</span>'
+      +'</div>';
+  }
+  return '<div style="background:#fff;flex:1;display:flex;flex-direction:column">'
+  +subHeader('payrollReview','Final approval','Tag: 3e')
+  +'<div class="pi" style="padding-top:22px">'
+  +'<div style="font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.02em;margin-bottom:6px">Ready to submit?</div>'
+  +'<div class="stat2" style="margin:10px 0 28px"><div><div class="s-val">'+fmt(TOTALS.gross)+'</div><div class="s-lbl">gross</div></div><div><div class="s-val">'+TOTALS.hours+'<span style="font-size:14px;font-weight:600;color:var(--t3);letter-spacing:0"> hrs</span></div><div class="s-lbl">total</div></div></div>'
+  +row(iconGlyph('calendar','#2563EB',14),'#EFF6FF','#2563EB','Pay date',TOTALS.payDate,true)
+  +row(iconGlyph('users','#7C3AED',14),'#F5F3FF','#7C3AED','Employees',TOTALS.employees)
+  +row(iconGlyph('dollar','var(--g)',14),'var(--gb)','var(--g)','Net deposits',fmt(TOTALS.netDeposits))
+  +row(iconGlyph('bank','#D97706',14),'#FFFBEB','#D97706','Bank balance',fmt(BANK.balance))
+  +'<div style="font-size:12px;color:var(--t3);line-height:1.5;margin-top:22px">Taxes file automatically after you submit.</div>'
+  +'<div style="flex:1"></div>'
+  +'<button class="btn btn-k" onclick="go(\'submitted\')">Submit payroll</button>'
+  +'<button class="btn" style="background:none;color:var(--t3);font-weight:500" onclick="go(\'payrollReview\')">Make changes</button>'
+  +'</div></div>';
+}
+function submitted(){
+  return '<div style="background:#fff;flex:1;display:flex;flex-direction:column">'
+  +'<div class="ph"><div class="pt">Submitted · Tag: 3f</div></div>'
+  +'<div class="pi" style="align-items:center;text-align:center">'
+  +'<div style="width:52px;height:52px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;margin:10px auto 4px;font-size:24px;color:var(--g)">✓</div>'
+  +'<div style="font-size:20px;font-weight:800;color:var(--t1)">You\'re done.</div>'
+  +'<div style="font-size:13px;color:var(--t3)">Nothing else needed.</div>'
+  +'<div class="card cp" style="width:100%;text-align:left;margin-top:10px">'
+  +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px"><span>Taxes filed automatically</span><span></span></div>'
+  +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px"><span>Deposits land '+TOTALS.payDate.split(',')[0]+'</span><span></span></div>'
+  +'<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12px"><span>Next payroll · '+TOTALS.nextPayDate.split(',')[0]+'</span><span></span></div>'
+  +'</div>'
+  +'<div style="flex:1"></div>'
+  +'<button class="btn btn-k" onclick="S.homeState=\'ready\';go(\'home\')">Back to home</button>'
+  +'</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// 4 — EXCEPTIONS (path 1b only, max 2 exception types)
+// ══════════════════════════════════════════════════════════
+function exceptions(){
+  var ddDone=S.ddResolved, otDone=S.otResolved;
+  var allClear=ddDone&&otDone;
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px">'
+  +'<button class="bk" onclick="go(\'home\')">←</button>'
+  +'<div style="flex:1"><div class="pt">Exceptions</div><div class="ps">Tag: 4a</div></div>'
+  +'<button class="hdr-ic" style="font-size:12px;color:var(--t3)" onclick="go(\'home\')">Done</button>'
+  +'</div>'
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 8px;display:flex;flex-direction:column;gap:10px">'
+  +'<span class="'+(allClear?'badge-g':'badge-a')+'" style="align-self:flex-start">'+(allClear?'All items resolved':(2-((ddDone?1:0)+(otDone?1:0)))+' item'+(((ddDone?1:0)+(otDone?1:0))===1?'':'s')+' need'+(((ddDone?1:0)+(otDone?1:0))===1?'s':'')+' your review')+'</span>'
+  +'<div class="card cp'+(ddDone?'':' ')+'" style="'+(ddDone?'':'border:1.5px solid var(--abr)')+'">'
+  +'<div class="tap" onclick="'+(ddDone?'':'go(\'ddFix\')')+'" style="display:flex;align-items:center;gap:10px">'
+  +av('MC',false,32)
+  +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+(ddDone?'✓ Direct deposit added':'Direct deposit missing')+' · Maria Chen</div>'+(ddDone?'':'<div style="font-size:11px;color:var(--at)">'+fmt(2115)+'/period · act before Jun 28</div>')+'</div>'
+  +(ddDone?'<span class="badge-g">Resolved</span>':'<span class="chevron">›</span>')
+  +'</div></div>'
+  +'<div class="card cp">'
+  +'<div class="tap" onclick="'+(otDone?'':'go(\'otDecide\')')+'" style="display:flex;align-items:center;gap:10px">'
+  +av('MT',false,32)
+  +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+(otDone?'✓ Overtime approved':'Overtime needs a decision')+' · Marcus T.</div>'+(otDone?'':'<div style="font-size:11px;color:var(--t3)">4 hrs OT at 1.5× — adds $204</div>')+'</div>'
+  +(otDone?'<span class="badge-g">Resolved</span>':'<span class="chevron">›</span>')
+  +'</div></div>'
+  +'<div class="row tap" onclick="var b=document.getElementById(\'exok\');b.style.display=b.style.display===\'none\'?\'block\':\'none\'"><span style="flex:1;font-size:12px;color:var(--t3)">Checks passed (7)</span><span class="chevron">▼</span></div>'
+  +'<div id="exok" style="display:none">'+['Tax withholding verified','Classification confirmed','State compliance met','Pay schedule adherence','Bank routing verified','Filing status validated','Deduction reconciliation'].map(function(c){return '<div style="display:flex;align-items:center;gap:7px;padding:6px 0;font-size:11px;color:var(--t2)"><span style="color:var(--g)">✓</span>'+c+'</div>';}).join('')+'</div>'
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +(allClear?'<button class="btn btn-k" onclick="S.homeState=\'ready\';go(\'payrollReview\')">Continue to payroll review</button>':'<button class="btn btn-o" disabled>Resolve to continue</button>')
+  +'</div></div>';
+}
+function ddFix(){
+  var channel=S.ddChannel||'sms';
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('exceptions','Direct deposit · Maria','Tag: 4b')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="card cp" style="background:#F5F3FF;border:1px solid #DDD6FE;display:flex;gap:8px;align-items:flex-start"><span class="badge-ai">✦ AI</span><p style="margin:0;font-size:12px;color:#3B0764;line-height:1.6">A quick link is the fastest way for Maria to add her bank info — no portal login needed.</p></div>'
+  +'<div style="display:flex;gap:6px">'
+  +'<button onclick="S.ddChannel=\'sms\';re()" style="flex:1;padding:9px;background:'+(channel==='sms'?'var(--navy)':'#fff')+';color:'+(channel==='sms'?'#fff':'var(--t2)')+';border:1.5px solid '+(channel==='sms'?'var(--navy)':'#E5E7EB')+';border-radius:9px;font-size:12px;font-weight:600;cursor:pointer">SMS</button>'
+  +'<button onclick="S.ddChannel=\'email\';re()" style="flex:1;padding:9px;background:'+(channel==='email'?'var(--navy)':'#fff')+';color:'+(channel==='email'?'#fff':'var(--t2)')+';border:1.5px solid '+(channel==='email'?'var(--navy)':'#E5E7EB')+';border-radius:9px;font-size:12px;font-weight:600;cursor:pointer">Email</button>'
+  +'</div>'
+  +'<div class="card cp"><div style="font-size:12px;color:var(--t2);line-height:1.6">"Hi Maria — your next paycheck is '+TOTALS.payDate.split(',')[0]+'. Add your direct deposit info: paylocity.com/setup/maria"</div></div>'
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn btn-k" onclick="S.ddResolved=true;go(\'exceptions\')">Send reminder</button>'
+  +'</div></div>';
+}
+function otDecide(){
+  var dec=S.otDecision;
+  function card(val,title,sub){
+    var sel=dec===val;
+    return '<div class="tap" onclick="S.otDecision=\''+val+'\';re()" style="padding:13px 14px;border-radius:13px;border:1.5px solid '+(sel?'var(--navy)':'#E5E7EB')+';background:'+(sel?'#F8F9FA':'#fff')+'">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--t1)">'+title+'</div><div style="font-size:11px;color:var(--t3);margin-top:2px">'+sub+'</div></div>';
+  }
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('exceptions','Overtime · Marcus','Tag: 4c')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px">'
+  +'<div class="card cp" style="background:#F5F3FF;border:1px solid #DDD6FE;display:flex;gap:8px;align-items:flex-start"><span class="badge-ai">✦ AI</span><p style="margin:0;font-size:12px;color:#3B0764;line-height:1.6">Marcus logged 44 hrs — 4 hrs OT at 1.5×. Adds $204 to gross pay.</p></div>'
+  +card('keep','Keep as-is','Approve — '+fmt(2890)+' total')
+  +card('adjust','Adjust hours or rate','Opens the hour steppers for this employee')
+  +card('remove','Remove overtime','Regular only — '+fmt(2686)+' total')
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn '+(dec?'btn-k':'btn-o')+'" '+(dec?'':'disabled')+' onclick="'+(dec?'confirmOT()':'')+'">Confirm</button>'
+  +'</div></div>';
+}
+function confirmOT(){
+  if(S.otDecision==='adjust'){ hideSheet(); S.editHoursOpenId='MT'; go('payrollEmployeeList'); return; }
+  if(S.otDecision==='remove'){ var mt=EMP.find(function(e){return e.id==='MT';}); if(mt) mt.hrs.ot=0; }
+  S.otResolved=true; go('exceptions');
+}
+
+// ══════════════════════════════════════════════════════════
+// 5 — TEAM (ported from original, unchanged interaction pattern)
+// ══════════════════════════════════════════════════════════
+function isPending(e){ return e.id==='MC' && !S.ddResolved; }
+function team(){
+  var pendingCount=EMP.filter(isPending).length;
+  if(!S.employeesLoaded){
+    return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
+    +'<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">'
+    +'<div><div class="pt">Team</div><div class="ps">No employees yet · Tag: 5a</div></div>'
+    +'<button onclick="showAddEmpSheet()" style="background:var(--navy);color:#fff;border:none;border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">+ Add</button>'
+    +'</div>'
+    +'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 28px;gap:12px">'
+    +'<div style="width:48px;height:48px;border-radius:14px;background:#EEF0F2;display:flex;align-items:center;justify-content:center">'+ico('team',false)+'</div>'
+    +'<div style="font-size:15px;font-weight:700;color:var(--t1)">No team members yet</div>'
+    +'<div style="font-size:12px;color:var(--t3);line-height:1.6">Import your last payroll register to bring in your team automatically, or add someone by hand.</div>'
+    +'<button class="btn btn-k" style="max-width:220px" onclick="S.setupFlow=false;go(\'collectMethod\')">Import from register</button>'
+    +'<button class="btn btn-o" style="max-width:220px" onclick="showAddEmpSheet()">Add manually</button>'
+    +'</div></div>';
+  }
+  return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
+  +'<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">'
+  +'<div><div class="pt">Team</div><div class="ps">'+EMP.length+' employees'+(pendingCount?' · '+pendingCount+' pending':'')+' · Tag: 5a</div></div>'
+  +'<button onclick="showAddEmpSheet()" style="background:var(--navy);color:#fff;border:none;border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">+ Add</button>'
+  +'</div>'
+  +'<div style="padding:13px 18px;display:flex;flex-direction:column;gap:7px;flex:1;overflow-y:auto">'
+  +EMP.map(function(e){
+    var p=isPending(e);
+    return '<div class="row tap" onclick="showEmp(\''+e.id+'\',\'team\')">'+av(e.id,p,34)
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.type+' · '+e.rate+'</div></div>'
+    +'<span class="'+(p?'badge-a':'badge-g')+'">'+(p?'Pending':'Active')+'</span></div>';
+  }).join('')
+  +'</div></div>';
+}
+function showAddEmpSheet(){
+  showSheet('<div style="padding:20px 20px 32px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:16px;font-weight:700">Hire · Tag: 5d</div><button onclick="hideSheet()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div><div style="display:flex;flex-direction:column;gap:11px"><div><span class="lbl">Full name</span><input class="inp" id="ne-name" placeholder="e.g. Jordan Smith"></div><div><span class="lbl">Job title</span><input class="inp" id="ne-role" placeholder="e.g. Marketing Manager"></div><div><span class="lbl">Employment type</span><div style="display:flex;gap:6px"><button id="nb-s" onclick="document.getElementById(\'nb-s\').style.background=\'var(--navy)\';document.getElementById(\'nb-s\').style.color=\'#fff\';document.getElementById(\'nb-h\').style.background=\'#fff\';document.getElementById(\'nb-h\').style.color=\'var(--t2)\'" style="flex:1;padding:10px;background:var(--navy);color:#fff;border:1.5px solid var(--navy);border-radius:10px;font-size:13px;cursor:pointer">Salaried</button><button id="nb-h" onclick="document.getElementById(\'nb-h\').style.background=\'var(--navy)\';document.getElementById(\'nb-h\').style.color=\'#fff\';document.getElementById(\'nb-s\').style.background=\'#fff\';document.getElementById(\'nb-s\').style.color=\'var(--t2)\'" style="flex:1;padding:10px;background:#fff;color:var(--t2);border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;cursor:pointer">Hourly</button></div></div><div><span class="lbl">Annual salary or hourly rate</span><input class="inp" id="ne-rate" placeholder="e.g. $65,000 or $28/hr"></div><div><span class="lbl">Start date</span><input class="inp" id="ne-start" type="date"></div><button onclick="saveNewEmp()" class="btn btn-k" style="margin-top:4px">Add to team</button></div></div>');
+}
+function saveNewEmp(){
+  var name=document.getElementById('ne-name')?.value;
+  if(!name){return;}
+  var init=(name.split(' ').map(function(p){return p[0]||'';}).join('').substring(0,2)).toUpperCase();
+  var isH=document.getElementById('nb-h').style.background==='var(--navy)'||document.getElementById('nb-h').style.background==='rgb(30, 41, 59)';
+  EMP.push({id:init+'_N',name:name,role:document.getElementById('ne-role')?.value||'Team member',type:isH?'Hourly':'Salaried',rate:document.getElementById('ne-rate')?.value||'TBD',period:'TBD',net:'TBD',status:'Active',bank:null,w4:'Pending',ded:[],ytd:{g:0,n:0,t:0,k:0},hist:[],hrs:{hourly:isH?80:0,pto:0,holiday:0,ot:0}});
+  S.employeesLoaded=true;
+  hideSheet();go('team');
+}
+
+// ─── EMPLOYEE DETAIL ─────────────────────────────────────
+function empDetail(){
+  var e=S.currentEmp;
+  if(!e)return '<div class="pi"><button class="btn btn-o" onclick="go(\'team\')">← Back</button></div>';
+  var ip=isPending(e);
+  var ov='<div class="card cp"><div class="sl" style="margin-bottom:10px">Current paycheck</div>'
+    +[['Gross pay',fmt(empGross(e))],['Est. net pay',e.net||'TBD'],['Period',TOTALS.period+', 2026'],['Pay date',TOTALS.payDate]]
+    .map(function(r,i,arr){return '<div style="display:flex;justify-content:space-between;padding:7px 0;'+(i<arr.length-1?'border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><span style="font-size:12px;color:var(--t3)">'+r[0]+'</span><span style="font-size:12px;font-weight:600">'+r[1]+'</span></div>';}).join('')
+    +'</div><div class="card cp"><div class="sl" style="margin-bottom:10px">Hours this period</div>'
+    +stepperGridInlineReadonly(e)
+    +'</div>'
+    +'<div class="card cp"><div class="sl" style="margin-bottom:10px">Deductions</div>'
+    +(e.ded&&e.ded.length?e.ded.map(function(d,i){return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:'+(i<e.ded.length-1?'1px solid rgba(0,0,0,.05)':'none')+'"><span style="font-size:12px;color:var(--t3)">'+d.n+'</span><span style="font-size:12px;font-weight:600">$'+d.a+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--t3)">None on file</div>')
+    +'</div><div class="card cp"><div class="sl" style="margin-bottom:10px">Banking &amp; W-4</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(0,0,0,.05)"><div><div style="font-size:12px;color:var(--t3)">Direct deposit</div><div style="font-size:13px;font-weight:600;color:'+(ip?'var(--r)':'var(--t1)')+'">'+(e.bank||'Not set up')+'</div></div>'+(ip?'<button onclick="go(\'ddFix\')" style="background:var(--rb);color:var(--r);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">Fix →</button>':'<span class="badge-g">✓ Active</span>')+'</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;color:var(--t3)">Filing status</div><div style="font-size:13px;font-weight:600">'+(e.w4||'Pending')+'</div></div><span class="badge-g">W-4 on file</span></div></div>';
+  var ytd=e.ytd||{g:0,n:0,t:0,k:0};
+  var payTab='<div style="display:flex;flex-direction:column;gap:10px"><div class="card cp"><div class="sl" style="margin-bottom:10px">Year to date</div>'
+    +[['Gross pay','$'+ytd.g.toLocaleString()],['Net pay','$'+ytd.n.toLocaleString()],['Taxes withheld','$'+ytd.t.toLocaleString()],['401k contributions','$'+ytd.k.toLocaleString()]]
+    .map(function(r,i,arr){return '<div style="display:flex;justify-content:space-between;padding:7px 0;'+(i<arr.length-1?'border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><span style="font-size:12px;color:var(--t3)">'+r[0]+'</span><span style="font-size:13px;font-weight:700;color:var(--t1)">'+r[1]+'</span></div>';}).join('')
+    +'</div><div><div class="sl" style="margin-bottom:7px">Pay history</div>'
+    +(e.hist&&e.hist.length?e.hist.map(function(h){return '<div class="row tap" onclick="S.homeTab=\'past\';go(\'home\')" style="margin-bottom:5px"><div style="width:34px;height:34px;border-radius:9px;background:'+(h.s==='Pending'?'var(--ab)':h.s==='Scheduled'?'#F0F9FF':'var(--gb)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(h.s==='Pending'?iconGlyph('alert','var(--at)',15):h.s==='Scheduled'?iconGlyph('calendar','#2563EB',15):iconGlyph('check','var(--g)',15))+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+h.d+'</div><div style="font-size:11px;color:var(--t3)">Gross $'+h.amt.toLocaleString()+' · Net $'+h.net.toLocaleString()+'</div></div><span class="'+(h.s==='Pending'?'badge-a':h.s==='Scheduled'?'':'badge-g')+'" style="'+(h.s==='Scheduled'?'font-size:11px;color:var(--t3)':'')+'">'+h.s+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--t3)">No history yet</div>')+'</div></div>';
+  return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\''+(S.from||'team')+'\')">←</button><div style="flex:1"><div style="font-size:11px;color:var(--t3)">'+e.type+' · Tag: 5b</div><div class="pt">'+e.name+'</div></div><span class="'+(ip?'badge-a':'badge-g')+'">'+(ip?'Pending':'Active')+'</span></div>'
+  +'<div style="padding:13px 18px 20px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="card cp" style="display:flex;align-items:center;gap:14px">'+av(e.id,ip,52)+'<div><div style="font-size:16px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3);margin-top:2px">'+e.role+'</div><div style="font-size:12px;color:var(--t3)">'+e.type+' · '+e.rate+'</div></div>'
+  +'<button onclick="showEmpActions()" style="width:36px;height:36px;border-radius:50%;background:#F3F4F6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:flex-start;margin-left:auto"><svg width="16" height="4" viewBox="0 0 16 4" fill="none"><circle cx="2" cy="2" r="1.5" fill="#6B7280"/><circle cx="8" cy="2" r="1.5" fill="#6B7280"/><circle cx="14" cy="2" r="1.5" fill="#6B7280"/></svg></button></div>'
+  +(ip?'<div style="background:var(--ab);border:1px solid var(--abr);border-radius:12px;padding:12px 14px"><div style="display:flex;align-items:center;gap:5px;margin-bottom:4px"><span style="display:flex">'+iconGlyph('alert','var(--at)',13)+'</span><span style="font-size:11px;font-weight:600;color:var(--at)">Action needed</span></div><div style="font-size:11px;color:var(--at);margin-bottom:10px;line-height:1.5">'+(e.issue||'Missing direct deposit')+'</div><button onclick="go(\'ddFix\')" style="width:100%;padding:9px;background:var(--at);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Send reminder</button></div>':'')
+  +'<div class="tab-row"><button class="tab '+(S.empTab==='overview'?'on':'')+'" onclick="S.empTab=\'overview\';re()">Overview</button><button class="tab '+(S.empTab==='pay'?'on':'')+'" onclick="S.empTab=\'pay\';re()">Pay &amp; YTD</button></div>'
+  +(S.empTab==='overview'?ov:payTab)
+  +'</div></div>';
+}
+function stepperGridInlineReadonly(e){
+  var h=e.hrs;
+  function cell(label,val,isOT){
+    return '<div style="flex:1;text-align:center;padding:8px 4px;border-radius:9px;background:'+(isOT?'var(--ab)':'#F9FAFB')+'">'
+      +'<div style="font-size:14px;font-weight:700;color:'+(isOT?'var(--at)':'var(--t1)')+'">'+val+'</div>'
+      +'<div style="font-size:9px;font-weight:600;color:'+(isOT?'var(--at)':'var(--t3)')+';text-transform:uppercase;letter-spacing:.04em;margin-top:1px">'+label+'</div></div>';
+  }
+  return '<div style="display:flex;gap:6px">'
+    +cell('Hourly',h.hourly,false)+cell('PTO',h.pto,false)+cell('Holiday',h.holiday,false)+cell('OT',h.ot,true)
+    +'</div>'
+    +'<div style="text-align:right;margin-top:8px"><button class="hdr-ic" style="font-size:11px;color:var(--navy);font-weight:600;padding:0" onclick="openEditHoursSheet(\''+e.id+'\')">Edit hours →</button></div>';
+}
+
+function showEmpActions(){
+  var e=S.currentEmp;
+  if(!e) return;
+  var ip=isPending(e);
+  var items=[
+    {label:'Edit pay rate',       icon:'dollar',  action:"hideSheet();go('rateChange')"},
+    {label:'Change title',        icon:'edit',    action:'hideSheet()'},
+    {label:'Run off-cycle payment',icon:'payment',action:"hideSheet();openOffCycleSheet('"+e.id+"')"},
+    {label:'Change pay schedule', icon:'cal',     action:'hideSheet()'},
+    {label:'View documents',      icon:'doc',     action:'hideSheet()'},
+    {label:'End employment',      icon:'x',       action:"hideSheet();startTerminate()", red:true},
+  ];
+  if(ip) items.unshift({label:'Send direct deposit reminder',icon:'bell',action:"hideSheet();go('ddFix')"});
+
+  var ICONS={
+    dollar:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
+    edit:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+    payment:'<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+    cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    doc:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+    bell:'<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
+    x:'<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+  };
+  function si(name){return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>';}
+
+  showSheet(
+    '<div style="padding:0 0 30px">'
+    +'<div style="padding:16px 18px 12px;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:10px">'
+    +av(e.id,false,32)
+    +'<div><div style="font-size:14px;font-weight:700;color:var(--t1)">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.role+' · '+e.type+' · Tag: 5c</div></div>'
+    +'<button onclick="hideSheet()" style="margin-left:auto;background:none;border:none;font-size:13px;color:var(--t3);cursor:pointer">Done</button>'
+    +'</div>'
+    +items.map(function(item,i){
+      var clr=item.red?'#DC2626':'var(--t1)';
+      var bg =item.red?'#FEF2F2':'#F3F4F6';
+      return '<div class="tap" onclick="'+item.action+'" style="display:flex;align-items:center;gap:13px;padding:13px 18px;'+(i<items.length-1?'border-bottom:1px solid rgba(0,0,0,.04)':'')+'">'
+        +'<div style="width:34px;height:34px;border-radius:9px;background:'+bg+';display:flex;align-items:center;justify-content:center;flex-shrink:0;color:'+clr+'">'+si(item.icon)+'</div>'
+        +'<span style="font-size:14px;font-weight:500;color:'+clr+'">'+item.label+'</span>'
+        +'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+  );
+}
+
+// ─── TERMINATION / FINAL PAY — ported near-verbatim (5e–5h) ──
+function termCompute(){
+  var reg=1154, ptoHrs=48, ptoPay=1385;
+  var gross=reg+ptoPay, tax=660, net=gross-tax;
+  return {reg:reg,ptoHrs:ptoHrs,ptoPay:ptoPay,gross:gross,tax:tax,net:net};
+}
+function startTerminate(){S.termType=null;S.termLastDay='Jun 20';S.termPayout='next';go('terminate');}
+
+function terminate(){
+  var e=S.currentEmp; if(!e) return '<div style="padding:40px">No employee selected</div>';
+  function seg(val,title,sub){
+    var sel=S.termType===val;
+    return '<div class="tap" onclick="S.termType=\''+val+'\';re()" style="padding:14px 15px;border-radius:13px;border:1.5px solid '+(sel?'var(--navy)':'#E5E7EB')+';background:'+(sel?'#F8F9FA':'#fff')+';display:flex;align-items:flex-start;gap:11px;cursor:pointer">'
+    +'<div class="radio" style="margin-top:1px;'+(sel?'border-color:var(--navy);background:var(--navy)':'')+'">'+(sel?'<span style="width:5px;height:5px;border-radius:50%;background:#fff;display:block"></span>':'')+'</div>'
+    +'<div><div style="font-size:14px;font-weight:600;color:var(--t1)">'+title+'</div><div style="font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4">'+sub+'</div></div></div>';
+  }
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px">'
+  +'<button class="bk" onclick="go(\'empDetail\')">←</button>'
+  +'<div><div style="font-size:11px;color:var(--t3)">End employment · 1 of 2 · Tag: 5e</div><div class="pt">'+e.name+'</div></div></div>'
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px">'
+  +'<div class="card cp" style="display:flex;align-items:center;gap:12px">'+av(e.id,false,44)+'<div><div style="font-size:15px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3)">'+e.role+' · '+e.rate+'</div></div></div>'
+  +'<div><div class="lbl" style="margin-bottom:8px">Reason for leaving</div><div style="display:flex;flex-direction:column;gap:8px">'
+  +seg('voluntary','Voluntary','Resigned or quit')
+  +seg('involuntary','Involuntary','Terminated or laid off')
+  +'</div></div>'
+  +'<div><div class="lbl" style="margin-bottom:8px">Last day worked</div><div class="card cp" style="display:flex;align-items:center;justify-content:space-between">'
+  +'<span style="font-size:15px;font-weight:600;color:var(--t1)">'+S.termLastDay+', 2026</span>'
+  +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+  +'</div></div>'
+  +'<div class="card cp"><div style="display:flex;gap:8px;align-items:flex-start"><span class="badge-ai">✦ AI</span><p style="margin:0;font-size:12px;color:var(--t2);line-height:1.6;flex:1">Whether the departure is voluntary or involuntary can change the legal deadline for final pay. I\'ll calculate the correct payout date and amount for '+JURIS.IL.name+' once you choose.</p></div></div>'
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn '+(S.termType?'btn-k':'btn-o')+'" '+(S.termType?'':'disabled')+' onclick="'+(S.termType?'go(\'termCalc\')':'')+'">Calculate final pay</button>'
+  +'</div></div>';
+}
+function termCalc(){
+  var e=S.currentEmp; if(!e) return '';
+  var c=termCompute(); var j=JURIS.IL;
+  var deadline=S.termType==='involuntary'?j.involuntary:j.voluntary;
+  function line(l,v,strong){return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:'+(strong?'var(--t1)':'var(--t3)')+';font-weight:'+(strong?'700':'400')+'">'+l+'</span><span style="font-size:13px;font-weight:'+(strong?'800':'600')+';color:var(--t1)">'+v+'</span></div>';}
+  function payOpt(val,title,sub,cost){
+    var sel=S.termPayout===val;
+    return '<div class="tap" onclick="S.termPayout=\''+val+'\';re()" style="padding:12px 13px;border-radius:12px;border:1.5px solid '+(sel?'var(--navy)':'#E5E7EB')+';background:'+(sel?'#F8F9FA':'#fff')+';display:flex;align-items:center;gap:10px;cursor:pointer">'
+    +'<div class="radio" style="'+(sel?'border-color:var(--navy);background:var(--navy)':'')+'">'+(sel?'<span style="width:5px;height:5px;border-radius:50%;background:#fff;display:block"></span>':'')+'</div>'
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--t1)">'+title+'</div><div style="font-size:11px;color:var(--t3);margin-top:1px">'+sub+'</div></div>'
+    +'<span style="font-size:11px;font-weight:600;color:'+(cost==='Free'?'var(--g)':'var(--t3)')+'">'+cost+'</span></div>';
+  }
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'terminate\')">←</button><div><div style="font-size:11px;color:var(--t3)">Final pay · 2 of 2 · Tag: 5f</div><div class="pt">'+e.name+'</div></div></div>'
+  +'<div style="flex:1;min-height:0;overflow-y:auto">'
+  +'<div style="background:#fff;padding:20px 20px 18px;border-bottom:1px solid rgba(0,0,0,.06)">'
+  +'<div style="font-size:10px;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Final paycheck (net)</div>'
+  +'<div style="font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1">$'+c.net.toLocaleString()+'</div>'
+  +'<div style="font-size:12px;color:var(--t3);margin-top:4px">Through '+S.termLastDay+' · '+(S.termType==='involuntary'?'Involuntary':'Voluntary')+'</div></div>'
+  +'<div style="padding:14px 18px 20px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="card cp"><div style="display:flex;gap:8px;align-items:flex-start"><span class="badge-ai">✦ AI</span><p style="margin:0;font-size:12px;color:var(--t2);line-height:1.6;flex:1">Computed for <b>'+j.name+'</b>. Regular pay is prorated through '+S.termLastDay+'. '+j.ptoNote+' I added '+c.ptoHrs+'h of accrued PTO at the salaried equivalent rate.</p></div></div>'
+  +'<div class="card cp"><div class="sl" style="margin-bottom:6px">Breakdown</div>'
+  +line('Prorated regular pay','$'+c.reg.toLocaleString())
+  +line('Accrued PTO payout ('+c.ptoHrs+'h)','$'+c.ptoPay.toLocaleString())
+  +line('Gross final pay','$'+c.gross.toLocaleString(),true)
+  +line('Taxes &amp; withholding','−$'+c.tax.toLocaleString())
+  +'<div style="display:flex;justify-content:space-between;padding:11px 0 2px"><span style="font-size:13px;font-weight:800;color:var(--t1)">Net</span><span style="font-size:16px;font-weight:800;color:var(--t1)">$'+c.net.toLocaleString()+'</span></div>'
+  +'</div>'
+  +'<div style="background:var(--ab);border:1px solid var(--abr);border-radius:14px;padding:14px 15px">'
+  +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--at)" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span style="font-size:12px;font-weight:700;color:var(--at)">Compliance deadline</span></div>'
+  +'<div style="font-size:12px;color:var(--at);line-height:1.5">'+deadline+' — <b>'+j.nextPayday+'</b>. '+j.name+' law, enforced automatically.</div></div>'
+  +'<div><div class="lbl" style="margin-bottom:8px">When to pay</div><div style="display:flex;flex-direction:column;gap:8px">'
+  +payOpt('next','Next payroll run','Rides the '+j.nextPayday+' cycle','Free')
+  +payOpt('sameday','Same-day deposit','Closes it out today','We absorb')
+  +'</div></div>'
+  +'</div></div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn btn-k" onclick="go(\'termConfirm\')">Review &amp; confirm</button>'
+  +'</div></div>';
+}
+function termConfirm(){
+  var e=S.currentEmp; if(!e) return '';
+  var c=termCompute(); var j=JURIS.IL;
+  var depDate=S.termPayout==='sameday'?'Today · same-day ACH':j.nextPayday;
+  function row(l,v){return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:var(--t3)">'+l+'</span><span style="font-size:13px;font-weight:600;color:var(--t1)">'+v+'</span></div>';}
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'termCalc\')">←</button><div><div style="font-size:11px;color:var(--t3)">Confirm · Tag: 5g</div><div class="pt">End employment</div></div></div>'
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="card cp" style="display:flex;align-items:center;gap:12px">'+av(e.id,false,44)+'<div><div style="font-size:15px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3)">'+e.role+'</div></div></div>'
+  +'<div class="card cp">'
+  +row('Last day worked',S.termLastDay+', 2026')
+  +row('Reason',S.termType==='involuntary'?'Involuntary':'Voluntary')
+  +row('Final net pay','$'+c.net.toLocaleString())
+  +row('Deposit',depDate)
+  +'<div style="display:flex;justify-content:space-between;padding:10px 0 2px"><span style="font-size:12px;color:var(--t3)">Removed from payroll</span><span style="font-size:13px;font-weight:600;color:var(--t1)">After final check</span></div>'
+  +'</div>'
+  +'<div style="background:var(--rb);border:1px solid #FECACA;border-radius:14px;padding:14px 15px"><div style="display:flex;gap:9px;align-items:flex-start"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div style="font-size:12px;font-weight:700;color:var(--r);margin-bottom:3px">This can\'t be undone</div><div style="font-size:11px;color:#991B1B;line-height:1.5">Once confirmed, the final check is queued and '+e.name+' is removed from active payroll.</div></div></div></div>'
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn btn-r" onclick="go(\'termDone\')">Confirm &amp; queue final pay</button>'
+  +'<button class="btn btn-o" style="margin-top:8px" onclick="go(\'empDetail\')">Cancel</button>'
+  +'</div></div>';
+}
+function termDone(){
+  var e=S.currentEmp; if(!e) return '';
+  var c=termCompute(); var j=JURIS.IL;
+  var depDate=S.termPayout==='sameday'?'Today':j.nextPayday;
+  var steps=[
+    {t:'Final check queued · $'+c.net.toLocaleString(),r:'Deposits '+depDate},
+    {t:j.name+' final-pay deadline met',r:'✓ On time'},
+    {t:e.name+' removed from active payroll',r:'After deposit'},
+    {t:'Benefits end-of-coverage notice',r:'COBRA info sent'},
+    {t:'W-2 issued at year end',r:'Automatic'}
+  ];
+  var rows=steps.map(function(s,i){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;'+(i<steps.length-1?'border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><span style="font-size:12px;color:var(--t2);flex:1;line-height:1.45;margin-right:8px">'+s.t+'</span><span style="font-size:11px;color:var(--t3);flex-shrink:0">'+s.r+'</span></div>';}).join('');
+  return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><div><div style="font-size:11px;color:var(--t3)">Employment ended · Tag: 5h</div><div class="pt">What happens next</div></div></div>'
+  +'<div class="pi">'
+  +'<div class="card cp" style="text-align:center"><div style="width:46px;height:46px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:20px;color:var(--g)">✓</div>'
+  +'<div style="font-size:16px;font-weight:700;color:var(--t1);margin-bottom:3px">Final pay queued for '+e.name+'</div>'
+  +'<div style="font-size:12px;color:var(--t3)">$'+c.net.toLocaleString()+' net · deposits '+depDate+'</div></div>'
+  +'<div class="card cp"><div class="sl" style="margin-bottom:8px">Handled automatically</div>'+rows+'</div>'
+  +'<div style="flex:1"></div>'
+  +'<button class="btn btn-k" onclick="go(\'team\')">Done</button></div></div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// 6 — CHANGE PAY RATE (new)
+// ══════════════════════════════════════════════════════════
+function rateChange(){
+  var e=S.currentEmp; if(!e) return '<div class="pi"><button class="btn btn-o" onclick="go(\'team\')">← Back</button></div>';
+  var isHourly=e.type==='Hourly';
+  var when=S.rateWhen;
+  return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'empDetail\')">←</button><div><div style="font-size:11px;color:var(--t3)">Tag: 6a</div><div class="pt">Change pay rate</div></div></div>'
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="card cp" style="display:flex;align-items:center;gap:12px">'+av(e.id,false,40)+'<div><div style="font-size:14px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3)">Current: '+e.rate+'</div></div></div>'
+  +'<div><span class="lbl">New '+(isHourly?'hourly rate':'annual salary')+'</span><div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:11px;overflow:hidden"><span style="padding:0 12px;font-size:16px;color:var(--t3)">$</span><input type="number" oninput="S.rateNewValue=this.value;re()" value="'+S.rateNewValue+'" placeholder="'+(isHourly?'36.00':'70,000')+'" style="flex:1;border:none;padding:13px 0;font-size:16px;font-weight:600;color:var(--t1);outline:none;background:none"></div></div>'
+  +'<div><span class="lbl">Effective</span><div style="display:flex;gap:6px">'
+  +'<button onclick="S.rateWhen=\'this\';re()" style="flex:1;padding:9px;background:'+(when==='this'?'var(--navy)':'#fff')+';color:'+(when==='this'?'#fff':'var(--t2)')+';border:1.5px solid '+(when==='this'?'var(--navy)':'#E5E7EB')+';border-radius:9px;font-size:12px;font-weight:600;cursor:pointer">This period</button>'
+  +'<button onclick="S.rateWhen=\'next\';re()" style="flex:1;padding:9px;background:'+(when==='next'?'var(--navy)':'#fff')+';color:'+(when==='next'?'#fff':'var(--t2)')+';border:1.5px solid '+(when==='next'?'var(--navy)':'#E5E7EB')+';border-radius:9px;font-size:12px;font-weight:600;cursor:pointer">Next period</button>'
+  +'</div></div>'
+  +'<div class="card cp" style="background:#F5F3FF;border:1px solid #DDD6FE;display:flex;gap:8px;align-items:flex-start"><span class="badge-ai">✦ AI</span><p style="margin:0;font-size:12px;color:#3B0764;line-height:1.6">Takes effect '+TOTALS.payDate.split(',')[0]+' — I\'ll recalculate future payrolls automatically.</p></div>'
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn '+(S.rateNewValue?'btn-k':'btn-o')+'" '+(S.rateNewValue?'':'disabled')+' onclick="'+(S.rateNewValue?'go(\'rateConfirm\')':'')+'">Review change</button>'
+  +'</div></div>';
+}
+function rateConfirm(){
+  var e=S.currentEmp; if(!e) return '';
+  var isHourly=e.type==='Hourly';
+  var oldVal=parseFloat((e.rate||'0').replace(/[^0-9.]/g,''))||0;
+  var newVal=parseFloat(S.rateNewValue)||0;
+  var impact=isHourly?Math.round((newVal-oldVal)*80):Math.round((newVal-oldVal)/26);
+  function row(l,v){return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:var(--t3)">'+l+'</span><span style="font-size:13px;font-weight:600;color:var(--t1)">'+v+'</span></div>';}
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('rateChange','Confirm change','Tag: 6b')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
+  +'<div class="card cp">'
+  +row('Before',e.rate)
+  +row('After',(isHourly?'$'+newVal.toFixed(2)+'/hr':'$'+newVal.toLocaleString()+'/yr'))
+  +row('Effective',S.rateWhen==='this'?TOTALS.period+', 2026':'Next period')
+  +row('Impact',(impact>=0?'+':'−')+fmt(Math.abs(impact))+'/period')
+  +'</div>'
+  +'</div>'
+  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
+  +'<button class="btn btn-k" onclick="applyRateChange()">Confirm</button>'
+  +'<button class="btn btn-o" style="margin-top:8px" onclick="go(\'rateChange\')">Cancel</button>'
+  +'</div></div>';
+}
+function applyRateChange(){
+  var e=S.currentEmp; if(!e){go('team');return;}
+  var isHourly=e.type==='Hourly';
+  var newVal=parseFloat(S.rateNewValue)||0;
+  e.rate=isHourly?('$'+newVal.toFixed(0)+'/hr'):('$'+newVal.toLocaleString()+'/yr');
+  S.rateNewValue='';
+  go('empDetail');
+}
+
+// ══════════════════════════════════════════════════════════
+// 7 — OFF-CYCLE PAYMENT & SCENARIO
+// ══════════════════════════════════════════════════════════
+function offCycleSheetBody(){
+  if(S.paymentSheetStage==='sent'){
+    var e=EMP.find(function(x){return x.id===S.paymentRecipient;});
+    return '<div style="padding:28px 20px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">'
+      +'<div style="font-size:26px">✓</div>'
+      +'<div style="font-size:16px;font-weight:700;color:var(--t1)">Payment sent</div>'
+      +'<div style="font-size:13px;color:var(--t3)">'+fmt(parseFloat(S.paymentAmount)||0)+' · '+(e?e.name:'Recipient')+' · '+(S.processDate==='today'?'today':'next payroll')+'</div>'
+      +'<button class="btn btn-k" style="margin-top:10px" onclick="hideSheet();resetPaymentForm();re()">Done</button>'
+      +'</div>';
+  }
+  var pt=S.paymentType, pd=S.processDate;
+  var types=[['bonus','Bonus'],['commission','Commission'],['reimbursement','Reimb.'],['makeup','Make-up pay']];
+  var typeBtns=types.map(function(t){
+    var sel=pt===t[0];
+    return '<button onclick="S.paymentType=\''+t[0]+'\';document.getElementById(\'sheet-content\').innerHTML=offCycleSheetBody()" style="padding:9px;background:'+(sel?'var(--navy)':'#fff')+';color:'+(sel?'#fff':'var(--t2)')+';border:1.5px solid '+(sel?'var(--navy)':'#E5E7EB')+';border-radius:9px;font-size:11px;font-weight:'+(sel?'600':'400')+';cursor:pointer">'+t[1]+'</button>';
+  }).join('');
+  var isToday=pd==='today';
+  var recip=S.paymentRecipient;
+  return '<div style="padding:20px 20px 32px">'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:16px;font-weight:700">Off-cycle payment · Tag: 7a/7b</div><button onclick="hideSheet();resetPaymentForm()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div>'
+  +'<div style="display:flex;flex-direction:column;gap:12px">'
+  +'<div><span class="lbl">Recipient</span><select class="inp" style="background:#fff" onchange="S.paymentRecipient=this.value;document.getElementById(\'sheet-content\').innerHTML=offCycleSheetBody()"><option value="">Select employee</option>'
+  +EMP.map(function(e){return '<option value="'+e.id+'"'+(recip===e.id?' selected':'')+'>'+e.name+'</option>';}).join('')
+  +'</select></div>'
+  +'<div><span class="lbl">Payment type</span><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+typeBtns+'</div>'
+  +(pt==='makeup'?'<div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.5">Extra payment added to an upcoming check — not a correction to a past pay period.</div>':'')
+  +'</div>'
+  +'<div><span class="lbl">Amount</span><div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:11px;overflow:hidden"><span style="padding:0 12px;font-size:18px;color:var(--t3)">$</span><input type="number" oninput="S.paymentAmount=this.value" value="'+S.paymentAmount+'" placeholder="0.00" style="flex:1;border:none;padding:13px 0;font-size:18px;font-weight:600;color:var(--t1);outline:none;background:none"></div></div>'
+  +'<div><span class="lbl">Memo (optional)</span><input class="inp" oninput="S.paymentMemo=this.value" value="'+S.paymentMemo+'" placeholder="e.g. Q2 performance bonus"></div>'
+  +'<div><span class="lbl">Process date</span><div style="display:flex;gap:6px">'
+  +'<button onclick="S.processDate=\'today\';document.getElementById(\'sheet-content\').innerHTML=offCycleSheetBody()" style="flex:1;padding:9px;background:'+(isToday?'var(--navy)':'#fff')+';color:'+(isToday?'#fff':'var(--t2)')+';border:1.5px solid '+(isToday?'var(--navy)':'#E5E7EB')+';border-radius:9px;font-size:12px;font-weight:'+(isToday?'600':'400')+';cursor:pointer">Today · +$2 fee</button>'
+  +'<button onclick="S.processDate=\'next\';document.getElementById(\'sheet-content\').innerHTML=offCycleSheetBody()" style="flex:1;padding:9px;background:'+(!isToday?'var(--navy)':'#fff')+';color:'+(!isToday?'#fff':'var(--t2)')+';border:1.5px solid '+(!isToday?'var(--navy)':'#E5E7EB')+';border-radius:9px;font-size:12px;font-weight:'+(!isToday?'600':'400')+';cursor:pointer">Next payroll</button>'
+  +'</div></div>'
+  +'<button class="btn '+(recip&&S.paymentAmount?'btn-g':'btn-o')+'" '+(recip&&S.paymentAmount?'':'disabled')+' onclick="'+(recip&&S.paymentAmount?'S.paymentSheetStage=\'sent\';document.getElementById(\'sheet-content\').innerHTML=offCycleSheetBody()':'')+'">Send payment</button>'
+  +(isToday?'<div style="text-align:center;font-size:11px;color:var(--t4)">Same-day ACH has a $2/transaction fee</div>':'')
+  +'</div></div>';
+}
+function openOffCycleSheet(empId){
+  S.paymentSheetStage='form';
+  if(empId) S.paymentRecipient=empId;
+  showSheet(offCycleSheetBody());
+}
+function resetPaymentForm(){S.paymentAmount='';S.paymentMemo='';S.paymentRecipient=null;S.paymentSheetStage='form';}
+function scenarioModel(){
+  var r=S.scenarioResult,loading=S.scenarioLoading,tc={base:'var(--g)',tax:'var(--a)',benefit:'var(--pu)'};
+  return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
+  +'<div class="ph"><div style="display:flex;align-items:center;gap:7px;margin-bottom:2px"><span class="badge-ai">✦ AI</span><button class="bk" onclick="go(\'home\')" style="margin-left:auto">✕</button></div><div class="pt">Scenario model</div><div class="ps">Tag: 7c</div></div>'
+  +'<div style="padding:13px 18px 24px;display:flex;flex-direction:column;gap:10px">'
+  +'<div style="display:flex;background:#fff;border-radius:10px;padding:3px;border:1px solid var(--bd)">'
+  +[['whatif','What-if'],['target','Budget target']].map(function(m){
+    return '<button onclick="S.scenarioMode=\''+m[0]+'\';S.scenarioResult=null;re()" style="flex:1;padding:8px 0;border-radius:7px;border:none;background:'+(S.scenarioMode===m[0]?'var(--navy)':'none')+';color:'+(S.scenarioMode===m[0]?'#fff':'var(--t3)')+';font-size:12px;font-weight:'+(S.scenarioMode===m[0]?'600':'400')+';cursor:pointer">'+m[1]+'</button>';
+  }).join('')+'</div>'
+  +(S.scenarioMode==='whatif'
+    ?'<div><span class="lbl">Describe a payroll change</span><textarea id="si" oninput="S.scenarioInput=this.value" style="width:100%;min-height:62px;padding:11px 13px;border-radius:11px;border:1.5px solid #E5E7EB;font-size:13px;color:var(--t1);resize:none;outline:none;background:#fff;font-family:inherit" placeholder="e.g. $500 bonus for all employees…">'+S.scenarioInput+'</textarea><div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">'+Object.keys(SCEN).map(function(ex){return '<button onclick="document.getElementById(\'si\').value=\''+ex+'\';S.scenarioInput=\''+ex+'\'" style="background:#fff;border:1px solid var(--bd);border-radius:20px;padding:3px 9px;font-size:10px;color:var(--t3);cursor:pointer">'+ex+'</button>';}).join('')+'</div></div>'
+    :'<div><span class="lbl">Keep next payroll under</span><div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:11px;overflow:hidden"><span style="padding:0 11px;font-size:16px;color:var(--t3)">$</span><input id="bi" type="number" oninput="S.scenarioBudget=this.value;re()" value="'+S.scenarioBudget+'" placeholder="50000" style="flex:1;border:none;padding:13px 0;font-size:16px;font-weight:600;color:var(--t1);outline:none;background:none"><span style="padding:0 11px;font-size:11px;color:var(--t3)">total</span></div>'+(S.scenarioBudget?'<div style="font-size:11px;color:var(--t3);margin-top:4px">Current '+fmt(TOTALS.gross)+' · gap '+fmt(Math.abs(TOTALS.gross-parseInt(S.scenarioBudget||0,10)))+'</div>':'')+'</div>')
+  +'<button onclick="runScenario()" style="padding:13px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;opacity:'+(loading?'.6':'1')+'">'+(loading?'Modeling…':'Run scenario')+'</button>'
+  +(loading?'<div class="card cp" style="display:flex;flex-direction:column;gap:5px"><div class="skel" style="height:13px;width:90%"></div><div class="skel" style="height:13px;width:72%"></div></div>':'')
+  +(r&&!loading?
+    '<div style="background:#F5F3FF;border-radius:12px;padding:12px 14px;border:1px solid #C4B5FD"><div style="font-size:9px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Analysis</div><p style="margin:0;font-size:12px;color:#3B0764;line-height:1.55">'+r.summary+'</p></div>'
+    +'<div class="card cp"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--t3)">Total employer cost</span><span style="font-size:15px;font-weight:700">$'+r.total_employer_cost.toLocaleString()+'</span></div><div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:var(--t3)">Employee net pay</span><span style="font-size:13px;font-weight:600;color:var(--g)">$'+r.employee_net.toLocaleString()+'</span></div></div>'
+    +'<div class="card cp"><div class="sl" style="margin-bottom:8px">Breakdown</div>'+r.breakdown.map(function(b,i){return '<div style="display:flex;justify-content:space-between;align-items:center;'+(i<r.breakdown.length-1?'padding-bottom:7px;margin-bottom:7px;border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><div style="display:flex;align-items:center;gap:7px"><div style="width:7px;height:7px;border-radius:2px;background:'+(tc[b.type]||'#888')+'"></div><span style="font-size:12px;color:var(--t3)">'+b.label+'</span></div><span style="font-size:12px;font-weight:600">$'+b.amount.toLocaleString()+'</span></div>';}).join('')+'</div>'
+    +'<div style="background:var(--gb);border:1px solid var(--gbr);border-radius:12px;padding:10px 13px"><div style="font-size:9px;color:var(--g);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:600">Recommendation</div><p style="margin:0;font-size:12px;color:var(--gt);line-height:1.55">'+r.recommendation+'</p></div>'
+    :'')
+  +'<button class="btn btn-o" onclick="go(\'home\')">Done</button>'
+  +'</div></div>';
+}
+function runScenario(){
+  S.scenarioLoading=true; re();
+  setTimeout(function(){
+    var key=S.scenarioInput;
+    S.scenarioResult=SCEN[key]||{summary:'Estimated impact based on your description. In a full build this would call a live model.',total_employer_cost:1200,employee_net:820,breakdown:[{label:'Base amount',amount:1000,type:'base'},{label:'Employer taxes',amount:200,type:'tax'}],recommendation:'Review before applying — this is an estimate.'};
+    S.scenarioLoading=false; re();
+  },1200);
+}
+
+// ══════════════════════════════════════════════════════════
+// 8 — BANKING (net new — no precedent in original)
+// ══════════════════════════════════════════════════════════
+function bankBalance(){
+  var buffer=BANK.balance-BANK.upcomingDebit;
+  var sufficient=buffer>=0;
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('home','Bank balance','Tag: 8a')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div style="font-size:12px;color:var(--t3)">'+BANK.name+' · '+BANK.type+'</div>'
+  +'<div class="s-val" style="font-size:32px">'+fmt(BANK.balance)+'</div>'
+  +'<span class="'+(sufficient?'badge-g':'badge-r')+'" style="align-self:flex-start">'+(sufficient?'Covers '+TOTALS.payDate.split(',')[0]+' payroll ('+fmt(BANK.upcomingDebit)+')':'Insufficient for upcoming payroll')+'</span>'
+  +'<div class="card cp">'
+  +'<div class="bank-row"><span style="color:var(--t3)">Current balance</span><span style="font-weight:600">'+fmt(BANK.balance)+'</span></div>'
+  +'<div class="bank-row"><span style="color:var(--t3)">Upcoming payroll debit</span><span style="font-weight:600">−'+fmt(BANK.upcomingDebit)+'</span></div>'
+  +'<div class="bank-row"><span style="color:var(--t3)">Buffer after payroll</span><span style="font-weight:700;color:'+(sufficient?'var(--g)':'var(--r)')+'">'+fmt(buffer)+'</span></div>'
+  +'</div>'
+  +'<div class="row tap" onclick="go(\'settingsDetail\')"><span style="flex:1;font-size:13px;font-weight:600">Manage bank account</span><span class="chevron">›</span></div>'
+  +'</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// 9 — SETTINGS (trimmed — plan/pricing section removed)
+// ══════════════════════════════════════════════════════════
+function settings(){
+  var items=[
+    ['company','Company','Prism Inc.'],
+    ['schedule','Pay schedule','Bi-weekly · '+TOTALS.payDate.split(',')[0]+' next'],
+    ['banking','Banking',BANK.name],
+    ['notifications','Notifications','Push · Email'],
+    ['security','Security','2FA on'],
+  ];
+  return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
+  +'<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd)"><div class="pt">Settings</div><div class="ps">Tag: 9a</div></div>'
+  +'<div style="padding:13px 18px;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto">'
+  +'<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)">'
+  +items.map(function(it,i){
+    return '<div class="tap" onclick="S.settingsSection=\''+it[0]+'\';go(\'settingsDetail\')" style="display:flex;align-items:center;gap:12px;padding:13px 15px;'+(i<items.length-1?'border-bottom:1px solid rgba(0,0,0,.04)':'')+'"><div style="flex:1"><div style="font-size:12px;color:var(--t3)">'+it[1]+'</div><div style="font-size:13px;font-weight:600;color:var(--t1)">'+it[2]+'</div></div><span class="chevron">›</span></div>';
+  }).join('')
+  +'</div>'
+  +'<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)">'
+  +'<div class="tap" onclick="S.homeTab=\'past\';go(\'home\')" style="display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid rgba(0,0,0,.04)"><div style="flex:1"><div style="font-size:12px;color:var(--t3)">Payroll</div><div style="font-size:13px;font-weight:600;color:var(--t1)">Pay history &amp; reports</div></div><span class="chevron">›</span></div>'
+  +'<div class="tap" onclick="go(\'team\')" style="display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid rgba(0,0,0,.04)"><div style="flex:1"><div style="font-size:12px;color:var(--t3)">Team</div><div style="font-size:13px;font-weight:600;color:var(--t1)">Manage employees</div></div><span class="chevron">›</span></div>'
+  +'<div class="tap" onclick="S.complianceContext=null;go(\'complianceDetail\',{from:\'settings\'})" style="display:flex;align-items:center;gap:12px;padding:13px 15px"><div style="flex:1"><div style="font-size:12px;color:var(--t3)">Compliance</div><div style="font-size:13px;font-weight:600;color:var(--t1)">Payroll readiness rules</div></div><span class="chevron">›</span></div>'
+  +'</div>'
+  +'<button class="btn btn-o" onclick="go(\'chooser\')" style="font-size:13px;color:#DC2626;border-color:rgba(220,38,38,.2)">Sign out</button>'
+  +'</div></div>';
+}
+function settingsDetail(){
+  var sec=S.settingsSection;
+  var cfg={
+    company:{title:'Company',fields:[{l:'Company name',v:'Prism Inc.'},{l:'EIN',v:'••–•••1234'},{l:'State',v:'Illinois'}]},
+    schedule:{title:'Pay schedule',fields:[{l:'Frequency',v:'Bi-weekly'},{l:'Next pay date',v:TOTALS.payDate},{l:'Cutoff',v:'T-2 business days'}]},
+    banking:{title:'Banking',fields:[{l:'Bank account',v:BANK.name},{l:'Routing',v:'••••••021'},{l:'Account type',v:BANK.type}]},
+    notifications:{title:'Notifications',toggles:[{l:'Payroll auto-run confirmation',on:true},{l:'Exception alerts',on:true},{l:'New employee reminders',on:true},{l:'Tax filing deadlines',on:true},{l:'Weekly summary digest',on:false}]},
+    security:{title:'Security',fields:[{l:'Two-factor auth',v:'Enabled · Authenticator'},{l:'Session timeout',v:'30 minutes'}]},
+  };
+  var c=cfg[sec]||{title:'Settings',fields:[]};
+  var body='';
+  if(c.fields){
+    body+='<div class="card">'+c.fields.map(function(f,i){
+      return '<div style="padding:12px 15px;'+(i<c.fields.length-1?'border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><span class="lbl" style="margin-bottom:4px">'+f.l+'</span><input class="inp" value="'+f.v+'" style="background:#F9FAFB;color:var(--t3)"></div>';
+    }).join('')+'</div>';
+  }
+  if(c.toggles){
+    body+='<div class="card">'+c.toggles.map(function(t,i){
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;'+(i<c.toggles.length-1?'border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><span style="font-size:13px;font-weight:500">'+t.l+'</span>'
+        +'<div onclick="var o=this.dataset.on===\'1\';this.dataset.on=o?\'0\':\'1\';this.style.background=o?\'#D1D5DB\':\'var(--g)\';this.querySelector(\'div\').style.transform=o?\'translateX(2px)\':\'translateX(20px)\'" data-on="'+(t.on?'1':'0')+'" style="width:40px;height:22px;border-radius:11px;cursor:pointer;position:relative;flex-shrink:0;background:'+(t.on?'var(--g)':'#D1D5DB')+'"><div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;box-shadow:0 1px 3px rgba(0,0,0,.2);transform:translateX('+(t.on?'20':'2')+'px)"></div></div></div>';
+    }).join('')+'</div>';
+  }
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +subHeader('settings',c.title,'Tag: 9b')
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
+  +body
+  +'</div>'
+  +(c.toggles?'':'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0"><button class="btn btn-k" onclick="go(\'settings\')">Save changes</button></div>')
+  +'</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// ASK PAYLOCITY — intent matching for the docked NL bar on Home.
+// (Pages 10a/10b removed; see nlDock() in the Home section.)
+// ══════════════════════════════════════════════════════════
+var NL_INTENTS=[
+  {match:/pto/i,response:"Got it — adding 8 hrs PTO for Aisha Williams this period.",action:function(){var a=EMP.find(function(e){return e.id==='AW';});if(a)a.hrs.pto+=8;},toast:'Updated Aisha\u2019s hours'},
+  {match:/balance/i,response:"Your Chase •••• 7823 balance is "+ (function(){return '$'+BANK.balance.toLocaleString();})()+". That covers the "+TOTALS.payDate.split(',')[0]+' payroll.',action:null,toast:null},
+  {match:/off-cycle|move.*payment/i,response:"Got it — I\u2019ll move the pending off-cycle payment to today\u2019s same-day ACH.",action:function(){S.processDate='today';},toast:'Payment timing updated'},
+];
+function matchNLIntent(text){
+  for(var i=0;i<NL_INTENTS.length;i++){ if(NL_INTENTS[i].match.test(text)) return NL_INTENTS[i]; }
+  return {response:'Got it — here\u2019s what I\u2019ll do: "'+text+'". This is a prototype, so I\u2019ll just confirm the shape of the action.',action:null,toast:'Noted'};
+}
+
+// ══════════════════════════════════════════════════════════
+// 11 — PREVIOUS PAYROLLS
+// ══════════════════════════════════════════════════════════
+function payHistoryDetail(){
+  var p=PAY_HIST[S.historySelected!=null?S.historySelected:0];
+
+  // Per-employee figures for this period, derived from YTD (÷ periods elapsed)
+  // so each row's gross/taxes/deductions/net stay internally consistent.
+  var PERIODS=6;
+  function perEmp(e){
+    var y=e.ytd||{g:0,n:0,t:0,k:0};
+    var gross=Math.round((y.g||0)/PERIODS);
+    var taxes=Math.round((y.t||0)/PERIODS);
+    var net=Math.round((y.n||0)/PERIODS);
+    var ded=Math.max(0,gross-taxes-net);
+    var isH=e.type==='Hourly';
+    var hrs=isH?(80+((e.hrs&&e.hrs.ot)||0)):null;
+    return {gross:gross,taxes:taxes,net:net,ded:ded,isH:isH,hrs:hrs};
+  }
+  var totalGross=0,totalTax=0,totalNet=0,totalDed=0;
+  var empRows=EMP.map(function(e,i){
+    var d=perEmp(e);
+    totalGross+=d.gross; totalTax+=d.taxes; totalNet+=d.net; totalDed+=d.ded;
+    return '<div class="tap" onclick="showEmp(\''+e.id+'\',\'payHistoryDetail\')" style="padding:13px 0;'+(i<EMP.length-1?'border-bottom:1px solid rgba(0,0,0,.06);':'')+'display:flex;align-items:flex-start;gap:10px">'
+      +av(e.id,false,34)
+      +'<div style="flex:1">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+          +'<div><div style="font-size:13px;font-weight:600;color:var(--t1)">'+e.name+'</div>'
+          +'<div style="font-size:11px;color:var(--t3);margin-top:1px">'+e.role+(d.isH?' · '+e.rate+' · '+d.hrs+' hrs':' · Salaried')+'</div></div>'
+          +'<div style="text-align:right;flex-shrink:0;margin-left:12px"><div style="font-size:14px;font-weight:700;color:var(--t1)">'+fmt(d.gross)+'</div><div style="font-size:10px;color:var(--t4)">gross</div></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:18px;margin-top:7px">'
+          +'<div><span style="font-size:10px;color:var(--t4)">Taxes </span><span style="font-size:12px;font-weight:600;color:var(--t2)">'+fmt(d.taxes)+'</span></div>'
+          +'<div><span style="font-size:10px;color:var(--t4)">Ded </span><span style="font-size:12px;font-weight:600;color:var(--t2)">'+fmt(d.ded)+'</span></div>'
+          +'<div><span style="font-size:10px;color:var(--gt)">Net </span><span style="font-size:12px;font-weight:700;color:var(--gt)">'+fmt(d.net)+'</span></div>'
+        +'</div>'
+      +'</div></div>';
+  }).join('');
+
+  // Compliance — same tile everywhere, navigates to the full checklist page
+  var complianceBlock='<div class="card cp tap" onclick="S.complianceContext='+(S.historySelected!=null?S.historySelected:0)+';go(\'complianceDetail\',{from:\'payHistoryDetail\'})" style="display:flex;align-items:center;gap:11px">'
+    +'<span style="width:28px;height:28px;border-radius:50%;background:var(--gb);color:var(--g);font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</span>'
+    +'<span style="flex:1;font-size:13px;font-weight:600;color:var(--t1)">'+(p.issues?'1 exception auto-resolved':'All compliance checks passed')+'</span>'
+    +'<span class="chevron">›</span>'
+  +'</div>';
+
+  return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="S.homeTab=\'past\';go(\'home\')">←</button><div><div class="pt">'+p.date+' payroll</div><div class="ps">'+p.label+', 2026 · Tag: 11b</div></div></div>'
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:12px">'
+  // Totals block (gross / taxes / deductions / net)
+  +'<div style="background:#F3F4F6;border-radius:12px;padding:13px 15px">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Totals · '+EMP.length+' employees</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    +'<div><div style="font-size:10px;color:var(--t4);margin-bottom:2px">Gross wages</div><div style="font-size:14px;font-weight:700;color:var(--t1)">'+fmt(totalGross)+'</div></div>'
+    +'<div><div style="font-size:10px;color:var(--t4);margin-bottom:2px">Taxes withheld</div><div style="font-size:14px;font-weight:700;color:var(--t1)">'+fmt(totalTax)+'</div></div>'
+    +'<div><div style="font-size:10px;color:var(--t4);margin-bottom:2px">Deductions</div><div style="font-size:14px;font-weight:700;color:var(--t1)">'+fmt(totalDed)+'</div></div>'
+    +'<div><div style="font-size:10px;color:var(--gt);margin-bottom:2px">Net deposited</div><div style="font-size:14px;font-weight:700;color:var(--g)">'+fmt(totalNet)+'</div></div>'
+    +'</div></div>'
+  // Compliance — one-liner, expands in line to the full checklist
+  +complianceBlock
+  // All employees, full detail
+  +'<div class="card" style="padding:2px 15px 4px"><div class="sl" style="margin:12px 0 2px">Employees</div>'+empRows+'</div>'
+  +'</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// DISPATCH
+// ══════════════════════════════════════════════════════════
+function draw(s){
+  var m={
+    chooser:chooser,
+    home:home,
+    connectBankStep:connectBankStep, collectMethod:collectMethod, connectSheet:connectSheet, reviewHours:reviewHours,
+    payrollReview:payrollReview, payrollEmployeeList:payrollEmployeeList, complianceDetail:complianceDetail, finalApproval:finalApproval, submitted:submitted,
+    exceptions:exceptions, ddFix:ddFix, otDecide:otDecide,
+    team:team, empDetail:empDetail,
+    terminate:terminate, termCalc:termCalc, termConfirm:termConfirm, termDone:termDone,
+    rateChange:rateChange, rateConfirm:rateConfirm,
+    scenarioModel:scenarioModel,
+    bankBalance:bankBalance,
+    settings:settings, settingsDetail:settingsDetail,
+    payHistoryDetail:payHistoryDetail,
+  };
+  return (m[s]||function(){return '<div style="padding:40px;text-align:center;color:var(--t3)">Screen not found: '+s+'</div>';})();
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT — URL param ?path=a|b|c auto-selects a demo state;
+// otherwise show the dev-only chooser.
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function(){
+  var params=new URLSearchParams(window.location.search);
+  var path=params.get('path');
+  if(path==='a'||path==='b'||path==='c'){
+    enterDemo(path);
+  } else {
+    go('chooser');
+  }
+});
+
+</script>
+</body>
+</html>
