@@ -36,8 +36,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .ph{padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:20}
 .pt{font-size:17px;font-weight:700;color:var(--t1);line-height:1.2}
 .ps{font-size:12px;color:var(--t3);margin-top:1px}
-.card{background:var(--card);border-radius:18px;border:none;box-shadow:none;transition:transform .12s,background .15s}
-.card.tap:hover{background:#EFF1F4}
+.card{background:#fff;border-radius:18px;border:0.5px solid var(--bd);box-shadow:none;transition:transform .12s,border-color .15s}
+.card.tap:hover{border-color:rgba(0,0,0,.14)}
 .card.tap:active{transform:scale(0.985)}
 .cp{padding:14px 16px}
 .btn{width:100%;padding:15px;border:none;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .12s,transform .1s,box-shadow .15s;line-height:1.2}
@@ -68,8 +68,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .div{height:1px;background:rgba(0,0,0,.05)}
 .tap{cursor:pointer;transition:opacity .12s,transform .1s}
 .tap:active{opacity:.7;transform:scale(0.98)}
-.row{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--card);border-radius:14px;border:none;cursor:pointer;transition:background .12s,transform .1s;min-height:44px}
-.row:hover{background:#EFF1F4}
+.row{display:flex;align-items:center;gap:10px;padding:13px 14px;background:#fff;border-radius:14px;border:0.5px solid var(--bd);cursor:pointer;transition:border-color .12s,transform .1s;min-height:44px}
+.row:hover{border-color:rgba(0,0,0,.14)}
 .row:active{opacity:.8;transform:scale(0.98)}
 .chevron{color:var(--t4);font-size:13px;margin-left:auto}
 @keyframes shim{from{background-position:-200% 0}to{background-position:200% 0}}
@@ -93,7 +93,7 @@ input[type=range].conf-slider::-moz-range-thumb{width:22px;height:22px;border-ra
 .stat2{display:flex;gap:22px}
 .s-val{font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
 .s-lbl{font-size:10px;color:var(--t4);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.stepper{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 6px 14px;border:none;border-radius:12px;margin-bottom:7px;background:#fff;min-height:44px}
+.stepper{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 6px 14px;border:none;border-radius:12px;margin-bottom:7px;background:var(--card);min-height:44px}
 .stepper.ot{background:var(--ab)}
 .st-lbl{font-size:12px;font-weight:600;color:var(--t2);flex:1}
 .stepper.ot .st-lbl{color:var(--at)}
@@ -130,6 +130,7 @@ input[type=range].conf-slider::-moz-range-thumb{width:22px;height:22px;border-ra
       <div id="sheet-content"></div>
     </div>
     <div id="dev-pill" class="dev-pill">DEMO</div>
+    <div id="toast" style="position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(12px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:11px 18px;border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:200;max-width:80%;text-align:center"></div>
   </div>
 </div>
 <script>
@@ -272,7 +273,8 @@ var S={
   screen:'chooser',
   demoPath:null,          // 'a' | 'b' | 'c'
   homeState:'first',      // 'ready' | 'attention' | 'first'
-  homeTab:'upcoming',     // 'upcoming' | 'past' — segmented control on Home
+  homeTab:'upcoming',
+  scenarioDraft:null,
   currentEmp:null,
   empTab:'overview',
   from:'home',
@@ -377,6 +379,14 @@ function empHoursTotal(e){
 // ══════════════════════════════════════════════════════════
 function showSheet(h){document.getElementById('sheet-content').innerHTML=h;document.getElementById('sheet-overlay').style.display='block';}
 function hideSheet(){document.getElementById('sheet-overlay').style.display='none';}
+var toastTimer=null;
+function toast(msg){
+  var t=document.getElementById('toast'); if(!t) return;
+  t.textContent=msg;
+  t.style.opacity='1'; t.style.transform='translateX(-50%) translateY(0)';
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(12px)'; },2200);
+}
 
 // ══════════════════════════════════════════════════════════
 // NAV
@@ -399,7 +409,7 @@ function updateNav(screen){
 function go(screen,opts){
   opts=opts||{};if(opts.from)S.from=opts.from;S.screen=screen;
   if(screen==='collectMethod'){ S.collectMethod=null; S.collectStage='idle'; }
-  if(screen==='connectBankStep'&&!S.bankConnected){ S.bankConnectStage='choose'; }
+  if(screen==='connectBankStep'){ S.bankConnectStage='choose'; }
   var root=document.getElementById('screen-root');
   root.style.opacity='0';
   setTimeout(function(){root.innerHTML=draw(screen);root.style.opacity='1';updateNav(screen);
@@ -425,6 +435,7 @@ function showEmp(id,from){S.currentEmp=EMP.find(function(e){return e.id===id;})|
 // ══════════════════════════════════════════════════════════
 function enterDemo(path){
   S.demoPath=path;
+  S.scenarioApplied=false; S.scenarioDraft=null; S.excCollapsed=null;
   if(path==='a'){ S.homeState='ready'; S.employeesLoaded=true; S.bankConnected=true; S.ddResolved=true; S.otResolved=true; }
   else if(path==='b'){ S.homeState='attention'; S.ddResolved=false; S.ddPending=false; S.otResolved=false; S.employeesLoaded=true; S.bankConnected=true; }
   else { S.homeState='first'; S.hoursCollected=false; S.collectMethod=null; S.collectStage='idle'; S.employeesLoaded=false; S.bankConnected=false; S.setupFlow=false; S.bankConnectStage='choose'; }
@@ -616,6 +627,7 @@ function applyNL(){
   if(act&&act.action) act.action();
   S.nlActive=false; S.nlStage='input'; S.nlInput=''; S.nlPendingAction=null;
   re();
+  if(act&&act.toast) toast(act.toast);
 }
 function cancelNL(){
   S.nlActive=false; S.nlStage='input'; S.nlInput=''; S.nlPendingAction=null;
@@ -648,7 +660,7 @@ function homeUpcomingBody(){
 // Doodle scatter for color-splash surfaces (design-system pattern)
 function doodles(clr){
   clr=clr||'rgba(255,255,255,.18)';
-  return '<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 340 160" preserveAspectRatio="none">'
+  return '<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 340 160" preserveAspectRatio="xMidYMid slice">'
     +'<text x="22" y="34" font-size="15" fill="'+clr+'" transform="rotate(-14 22 34)">$</text>'
     +'<text x="300" y="28" font-size="13" fill="'+clr+'" transform="rotate(11 300 28)">$</text>'
     +'<text x="268" y="128" font-size="17" fill="'+clr+'" transform="rotate(-8 268 128)">$</text>'
@@ -663,11 +675,11 @@ function doodles(clr){
 function homeReadyBody(){
   return '<div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--g)"></div><span style="font-size:12px;font-weight:600;color:var(--gt)">Payroll on track</span><span style="font-size:11px;color:var(--t4)">· checked now</span></div>'
   +'<div style="font-size:30px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1.15">All set for now.</div>'
-  +'<div class="card tap" onclick="go(\'payrollReview\')" style="padding:16px 16px 14px">'
+  +'<div class="card tap" onclick="go(\'payrollReview\')" style="padding:16px 16px 14px;background:var(--gb);border:1px solid var(--gbr)">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
     +'<span style="font-size:14px;font-weight:700;color:var(--t1)">Upcoming payroll</span><span class="chevron">›</span></div>'
     +'<div style="font-size:34px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums">'+fmt(TOTALS.gross)+'</div>'
-    +'<div style="font-size:12px;color:var(--t3);margin:5px 0 12px">'+TOTALS.period+' · runs '+TOTALS.payDate.split(',')[0]+'</div>'
+    +'<div style="margin:8px 0 12px"><span class="badge-g">Ready to run · '+TOTALS.payDate.split(',')[0]+'</span></div>'
     +'<div style="display:flex;gap:8px">'
     +'<div style="flex:1;background:#fff;border-radius:12px;padding:11px 13px"><div style="font-size:11px;color:var(--t4);margin-bottom:2px">Employees</div><div style="font-size:17px;font-weight:800;color:var(--t1);font-variant-numeric:tabular-nums">'+TOTALS.employees+'</div></div>'
     +'<div style="flex:1;background:#fff;border-radius:12px;padding:11px 13px"><div style="font-size:11px;color:var(--t4);margin-bottom:2px">Hours</div><div style="font-size:17px;font-weight:800;color:var(--t1);font-variant-numeric:tabular-nums">'+TOTALS.hours+'</div></div>'
@@ -684,15 +696,15 @@ function homeAttentionBody(){
   var openCount=(ddOpen?1:0)+(otOpen?1:0);
   return '<div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:var(--a);animation:pulse-dot 1.8s ease-in-out infinite"></div><span style="font-size:12px;font-weight:600;color:var(--at)">Payroll paused</span><span style="font-size:11px;color:var(--t4)">· '+openCount+' item'+(openCount===1?'':'s')+' to clear</span></div>'
   +'<div style="font-size:30px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1.15">Action needed.</div>'
-  +'<div class="card tap" onclick="go(\'payrollReview\')" style="padding:16px 16px 14px">'
+  +'<div class="card tap" onclick="go(\'payrollReview\')" style="padding:16px 16px 14px;background:var(--ab);border:1px solid var(--abr)">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
     +'<span style="font-size:14px;font-weight:700;color:var(--t1)">Upcoming payroll</span><span class="chevron">›</span></div>'
     +'<div style="font-size:34px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums">'+fmt(TOTALS.gross)+'</div>'
-    +'<div style="font-size:12px;color:var(--t3);margin:5px 0 12px">'+TOTALS.period+' · '+openCount+' item'+(openCount===1?'':'s')+' need'+(openCount===1?'s':'')+' review</div>'
+    +'<div style="margin:8px 0 12px"><span class="badge-a">Paused · '+openCount+' item'+(openCount===1?'':'s')+' to review</span></div>'
     +'<div style="display:flex;gap:8px">'
     +'<div style="flex:1;background:#fff;border-radius:12px;padding:11px 13px"><div style="font-size:11px;color:var(--t4);margin-bottom:2px">Employees</div><div style="font-size:17px;font-weight:800;color:var(--t1);font-variant-numeric:tabular-nums">'+TOTALS.employees+'</div></div>'
     +'<div style="flex:1;background:#fff;border-radius:12px;padding:11px 13px"><div style="font-size:11px;color:var(--t4);margin-bottom:2px">Hours</div><div style="font-size:17px;font-weight:800;color:var(--t1);font-variant-numeric:tabular-nums">'+TOTALS.hours+'</div></div>'
-    +'<div style="flex:1;background:var(--ab);border-radius:12px;padding:11px 13px"><div style="font-size:11px;color:var(--at);opacity:.75;margin-bottom:2px">To review</div><div style="font-size:17px;font-weight:800;color:var(--at);font-variant-numeric:tabular-nums">'+openCount+'</div></div>'
+    +'<div style="flex:1;background:#fff;border-radius:12px;padding:11px 13px"><div style="font-size:11px;color:var(--t4);margin-bottom:2px">To review</div><div style="font-size:17px;font-weight:800;color:var(--at);font-variant-numeric:tabular-nums">'+openCount+'</div></div>'
     +'</div>'
   +'</div>' 
   +aiInsightCard()
@@ -709,34 +721,36 @@ function homeFirstBody(){
 }
 // ── First-payroll setup wizard, step 1 of 2: connect a bank ──
 function connectBankStep(){
-  var body;
-  if(S.bankConnected){
-    body='<div class="card cp" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 16px">'
-      +'<div style="width:40px;height:40px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--g)">✓</div>'
-      +'<div style="font-size:15px;font-weight:700;color:var(--t1)">Bank connected</div>'
-      +'<div style="font-size:12px;color:var(--t3)">'+BANK.name+'</div>'
-      +'</div>';
-  } else if(S.bankConnectStage==='connecting'){
-    body='<div class="card cp" style="display:flex;align-items:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin .75s linear infinite;flex-shrink:0"><path d="M12 2a10 10 0 0110 10" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round"/></svg><span style="font-size:13px;color:var(--t2)">Connecting to '+(S.connectingBank||'your bank')+'…</span></div>';
-  } else {
-    var banks=['Chase','Bank of America','Wells Fargo','Capital One'];
-    body='<input class="inp" placeholder="Search for your bank" style="margin-bottom:2px">'
-      +banks.map(function(b){return '<div class="row tap" onclick="connectBankStepChoose(\''+b+'\')"><span style="flex:1;font-size:13px;font-weight:600">'+b+'</span><span class="chevron">›</span></div>';}).join('');
-  }
+  var banks=['Chase','Bank of America','Wells Fargo','Capital One'];
+  var busy=S.bankConnectStage==='connecting'||S.bankConnectStage==='connected';
+  var rows=banks.map(function(b){
+    var isSel=S.connectingBank===b;
+    var trailing='<span class="chevron">›</span>';
+    if(isSel&&S.bankConnectStage==='connecting'){
+      trailing='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin .75s linear infinite;flex-shrink:0"><path d="M12 2a10 10 0 0110 10" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round"/></svg>';
+    } else if(isSel&&S.bankConnectStage==='connected'){
+      trailing='<span style="width:24px;height:24px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:pop-in .35s cubic-bezier(0.34,1.56,0.64,1) both">'
+        +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" style="stroke-dasharray:24;stroke-dashoffset:24;animation:draw-check .3s .05s ease-out forwards"/></svg></span>';
+    }
+    var dim=busy&&!isSel?'opacity:.4;':'';
+    return '<div class="row'+(busy?'':' tap')+'" '+(busy?'':'onclick="connectBankStepChoose(\''+b+'\')"')+' style="'+dim+(isSel&&busy?'border:1.5px solid '+(S.bankConnectStage==='connected'?'var(--gbr)':'var(--navy)')+';':'')+'"><span style="flex:1;font-size:13px;font-weight:600">'+b+'</span>'+trailing+'</div>';
+  }).join('');
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('home','Connect your bank','Needed before payroll can run','Step 1 of 2')
+  +stepHeader('home','Step 1 of 2')
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
-  +body
-  +'</div>'
-  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
-  +'<button class="btn '+(S.bankConnected?'btn-k':'btn-o')+'" '+(S.bankConnected?'':'disabled')+' onclick="'+(S.bankConnected?'go(\'collectMethod\')':'')+'">Continue</button>'
+  +pageTitle('Connect your bank','Payroll debits and deposits run from this account. Needed before payroll can run.')
+  +'<input class="inp" placeholder="Search for your bank" style="margin-bottom:2px"'+(busy?' disabled':'')+'>'
+  +rows
   +'</div></div>';
 }
 function connectBankStepChoose(name){
   S.connectingBank=name;
   S.bankConnectStage='connecting';
   re();
-  setTimeout(function(){ S.bankConnected=true; re(); },1200);
+  setTimeout(function(){
+    S.bankConnected=true; S.bankConnectStage='connected'; re();
+    setTimeout(function(){ if(S.screen==='connectBankStep') go('collectMethod'); },1000);
+  },2000);
 }
 // "Past" tab content — tucked-in Previous Payrolls list (was screen 11a)
 function pastPayrollsBody(){
@@ -781,6 +795,18 @@ function subHeader(back,title,sub,eyebrow){
     +'<div style="flex:1">'+(eyebrow?'<div style="font-size:10px;font-weight:700;color:var(--pu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px">'+eyebrow+'</div>':'')+'<div class="pt">'+title+'</div>'+(sub?'<div class="ps">'+sub+'</div>':'')+'</div>'
     +'</div></div>';
 }
+// Step header — back arrow + a plain step label only (title/explainer live in the body).
+function stepHeader(back,step){
+  return '<div class="ph"><div style="display:flex;align-items:center;gap:12px">'
+    +'<button class="bk" onclick="go(\''+back+'\')">←</button>'
+    +'<span style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.08em">'+step+'</span>'
+    +'</div></div>';
+}
+// In-body page title + explainer for step screens.
+function pageTitle(title,sub){
+  return '<div style="padding:2px 0 4px"><div style="font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.02em;line-height:1.15">'+title+'</div>'
+    +(sub?'<div style="font-size:13.5px;color:var(--t3);margin-top:5px;line-height:1.5">'+sub+'</div>':'')+'</div>';
+}
 function collectMethod(){
   function card(val,title,sub){
     var sel=S.collectMethod===val;
@@ -788,21 +814,23 @@ function collectMethod(){
       +'<div class="radio" style="'+(sel?'border-color:var(--navy);background:var(--navy)':'')+'">'+(sel?'<span style="width:5px;height:5px;border-radius:50%;background:#fff;display:block"></span>':'')+'</div>'
       +'<div><div style="font-size:14px;font-weight:600;color:var(--t1)">'+title+'</div><div style="font-size:11px;color:var(--t3);margin-top:2px">'+sub+'</div></div></div>';
   }
-  var uploading=S.collectMethod==='upload'&&S.collectStage!=='idle';
+  var uploading=(S.collectMethod==='upload'||S.collectMethod==='sheets')&&S.collectStage!=='idle';
+  var loadingCopy=S.collectMethod==='sheets'?'Syncing from Google Sheets…':'Reading your register…';
+  var doneCopy=S.collectMethod==='sheets'?'Synced — 12 employees found':'Register read — 12 employees found';
   var footer;
   if(uploading&&S.collectStage==='loading'){
-    footer='<div class="card cp" style="display:flex;align-items:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin .75s linear infinite;flex-shrink:0"><path d="M12 2a10 10 0 0110 10" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round"/></svg><span style="font-size:13px;color:var(--t2)">Reading your register…</span></div>';
+    footer='<div class="card cp" style="display:flex;align-items:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin .75s linear infinite;flex-shrink:0"><path d="M12 2a10 10 0 0110 10" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round"/></svg><span style="font-size:13px;color:var(--t2)">'+loadingCopy+'</span></div>';
   } else if(uploading&&S.collectStage==='done'){
-    footer='<div class="card cp" style="display:flex;align-items:center;gap:10px;background:var(--gb);border:1px solid var(--gbr)"><span style="font-size:16px;color:var(--g)">✓</span><span style="font-size:13px;color:var(--gt);font-weight:600">Register read — 12 employees found</span></div>';
+    footer='<div class="card cp" style="display:flex;align-items:center;gap:10px;background:var(--gb);border:1px solid var(--gbr)"><span style="font-size:16px;color:var(--g)">✓</span><span style="font-size:13px;color:var(--gt);font-weight:600">'+doneCopy+'</span></div>';
   } else {
     footer='<button class="btn '+(S.collectMethod?'btn-k':'btn-o')+'" '+(S.collectMethod?'':'disabled')+' onclick="'+(S.collectMethod?'continueCollect()':'')+'">Continue</button>';
   }
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
   +(S.setupFlow
-    ? subHeader('connectBankStep','People and hours',null,'Step 2 of 2')
+    ? stepHeader('connectBankStep','Step 2 of 2')
     : subHeader('home','People and hours','Tag: 2a'))
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
-  +'<div style="font-size:13px;color:var(--t3);margin-bottom:2px">How do you want to bring in hours for this period?</div>'
+  +(S.setupFlow?pageTitle('People and hours','How do you want to bring in hours for this period?'):'<div style="font-size:13px;color:var(--t3);margin-bottom:2px">How do you want to bring in hours for this period?</div>')
   +card('upload','Upload a payroll register','A prior register — .csv, .xlsx, or .pdf')
   +card('smart','Use smart default values','Standard hours for everyone, edit what changed')
   +card('sheets','Connect a spreadsheet','Sync hours from Google Sheets automatically')
@@ -812,39 +840,11 @@ function collectMethod(){
   +'</div></div>';
 }
 function continueCollect(){
-  if(S.collectMethod==='upload'){ startUploadAnim(); }
-  else if(S.collectMethod==='sheets'){ go('connectSheet'); }
+  if(S.collectMethod==='upload'||S.collectMethod==='sheets'){ startUploadAnim(); }
   else { S.employeesLoaded=true; S.editHoursOpenId=null; go('reviewHours'); } // smart defaults: team assumed on file
 }
 // Runs in place on 2a: loading → done → advance to 2c (page 2b removed).
 function startUploadAnim(){
-  S.collectStage='loading';re();
-  setTimeout(function(){S.collectStage='done';S.employeesLoaded=true;re();
-    setTimeout(function(){S.editHoursOpenId=null;go('reviewHours');},700);
-  },1600);
-}
-function connectSheet(){
-  var stage=S.collectStage;
-  var steps=[
-    {label:'Connecting to Google Sheets',done:true},
-    {label:'Found file · Prism Inc – Hours.xlsx',done:stage!=='idle'},
-    {label:'Syncing '+TOTALS.employees+' employees…',done:stage==='done'},
-    {label:'Sync complete',done:stage==='done'},
-  ];
-  return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('collectMethod','Connect spreadsheet','Tag: 2d')
-  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
-  +'<div class="card cp" style="display:flex;align-items:center;gap:10px"><span style="display:flex;color:var(--t2)">'+iconGlyph('fileChart','currentColor',20)+'</span><span style="font-size:13px;font-weight:600;color:var(--t1)">Prism Inc – Hours.xlsx</span></div>'
-  +steps.map(function(st,i){
-    var active=stage!=='idle'&&(i<2||stage==='done');
-    return '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:'+(active?'var(--t2)':'var(--t4)')+'"><span style="color:'+(active?'var(--g)':'#D1D5DB')+'">'+(active?'✓':'○')+'</span>'+st.label+'</div>';
-  }).join('')
-  +'</div>'
-  +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
-  +(stage==='idle'?'<button class="btn btn-k" onclick="startSheetSync()">Connect</button>':'<button class="btn btn-o" disabled>Continue (syncing…)</button>')
-  +'</div></div>';
-}
-function startSheetSync(){
   S.collectStage='loading';re();
   setTimeout(function(){S.collectStage='done';S.employeesLoaded=true;re();
     setTimeout(function(){S.editHoursOpenId=null;go('reviewHours');},700);
@@ -880,7 +880,7 @@ function reviewHours(){
   +section('Salaried',salaried)
   +'</div>'
   +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
-  +'<button class="btn btn-k" onclick="S.hoursCollected=true;go(\'payrollReview\')">Add to payroll</button>'
+  +'<button class="btn btn-k" onclick="S.hoursCollected=true;S.homeState=\'ready\';S.ddResolved=true;S.otResolved=true;go(\'home\')">Add to payroll</button>'
   +'</div></div>';
 }
 
@@ -973,9 +973,15 @@ function barOnly(segments, unit){
   return '<div>'+stackedBar(segments)+barLegendChips(segments, unit)+'</div>';
 }
 // Headline gross/hours totals combined with the gross-by-type bar breakdown.
-function statsAndBarsCard(gross, hours, grossSegs){
-  return '<div class="card cp" style="display:flex;flex-direction:column;gap:16px">'
-    +'<div class="stat2"><div><div class="s-val">'+fmt(gross)+'</div><div class="s-lbl">gross</div></div><div><div class="s-val">'+hours+' hrs</div><div class="s-lbl">total</div></div></div>'
+function statsAndBarsCard(gross, hours, grossSegs, state){
+  var tint = state==='review'
+    ? 'background:var(--ab);border:1px solid var(--abr)'
+    : state==='ready'
+    ? 'background:var(--gb);border:1px solid var(--gbr)'
+    : '';
+  var valClr = 'var(--t1)';
+  return '<div class="card cp" style="display:flex;flex-direction:column;gap:16px;'+tint+'">'
+    +'<div class="stat2"><div><div class="s-val" style="color:'+valClr+'">'+fmt(gross)+'</div><div class="s-lbl">gross</div></div><div><div class="s-val" style="color:'+valClr+'">'+hours+' hrs</div><div class="s-lbl">total</div></div></div>'
     +barOnly(grossSegs, '$')
     +'</div>';
 }
@@ -983,8 +989,8 @@ function payrollReview(){
   var taxDetail=['Federal withholding','FICA (employer + employee)','Illinois state withholding','Illinois SUI'].map(function(t,i){return '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--t2)"><span>'+t+'</span><span>'+fmt([4200,3100,1200,440][i])+'</span></div>';}).join('');
   var dedDetail=['Health insurance','Dental','401(k) contributions'].map(function(t,i){return '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--t2)"><span>'+t+'</span><span>'+fmt([1880,180,520][i])+'</span></div>';}).join('');
 
-  // Category palette — OT stays amber (app-wide OT convention); others distinct.
-  var CAT={hourly:'#2563EB', pto:'#7C3AED', holiday:'#0D9488', ot:'#D97706'};
+  // Category palette — deep, saturated tones that hold up on the tinted hero.
+  var CAT={hourly:'#1B2B4B', pto:'#6D28D9', holiday:'#0F766E', ot:'#C2410C'};
 
   // Total hours (for the headline stat) — summed live from every employee's hours.
   var hoursByType={hourly:0,pto:0,holiday:0,ot:0};
@@ -1032,22 +1038,44 @@ function payrollReview(){
     ddRowHtml=excRow('MC','Maria Chen',ddOpen,'Direct deposit missing','✓ Direct deposit added','ddFix','S.ddResolved=false');
   }
   var showExc = openCount>0 || (S.demoPath==='b' && (S.ddResolved||S.otResolved));
-  var excBlock = showExc ?
-    '<div class="card" style="border:1.5px solid '+(openCount?'var(--abr)':'var(--gbr)')+'">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;background:'+(openCount?'var(--ab)':'var(--gb)')+';border-bottom:1px solid '+(openCount?'var(--abr)':'var(--gbr)')+';border-radius:15px 15px 0 0"><span style="font-size:13px;font-weight:700;color:'+(openCount?'var(--at)':'var(--gt)')+'">'+(openCount?'Needs attention':'All items resolved')+'</span><span style="font-size:11px;color:'+(openCount?'var(--at)':'var(--gt)')+'">'+(openCount?openCount+' item'+(openCount===1?'':'s')+' to review':'')+'</span></div>'
-      +'<div style="padding:0 14px 4px">'
+  var allResolved = showExc && openCount===0;
+  var collapsed = allResolved && (S.excCollapsed!==false); // resolved → collapsed unless user expanded
+  var excBlock='';
+  if(showExc){
+    var headerBar='<div class="tap" onclick="'+(allResolved?'S.excCollapsed='+(collapsed?'false':'true')+';re()':'')+'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:'+(openCount?'var(--ab)':'var(--gb)')+';border-radius:'+(collapsed?'15px':'15px 15px 0 0')+'">'
+      +'<span style="font-size:13px;font-weight:700;color:'+(openCount?'var(--at)':'var(--gt)')+'">'+(openCount?'Needs attention':'All items resolved')+'</span>'
+      +(openCount
+        ? '<span style="font-size:11px;color:var(--at)">'+openCount+' item'+(openCount===1?'':'s')+' to review</span>'
+        : '<span style="font-size:11px;color:var(--gt);display:inline-flex;align-items:center;gap:5px">'+(collapsed?'2 resolved':'Hide')+'<span style="transition:transform .2s;transform:rotate('+(collapsed?'0':'180')+'deg);display:inline-block">▾</span></span>')
+      +'</div>';
+    excBlock='<div class="card" style="background:#fff;border:1.5px solid '+(openCount?'var(--abr)':'var(--gbr)')+';overflow:hidden">'
+      +headerBar
+      +(collapsed?'':'<div style="padding:0 14px 4px">'
         +ddRowHtml
         +excRow('MT','Marcus Thompson',otOpen,'Overtime added · <span style="color:var(--a);font-weight:600">+$204</span>','✓ Overtime approved','otDecide','S.otResolved=false;S.otDecision=null').replace('border-bottom:1px solid rgba(0,0,0,.05)','border-bottom:none')
-      +'</div>'
-    +'</div>' : '';
+      +'</div>')
+    +'</div>';
+  }
+
+  var ready=!openCount;
+  var heroBg=ready?'var(--gb)':'var(--ab)';
+  var heroBd=ready?'var(--gbr)':'var(--abr)';
+  var hero='<div style="background:'+heroBg+';border-bottom:1px solid '+heroBd+';padding:13px 19px 18px">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="bk" onclick="go(\'home\')" style="color:var(--t2)">←</button><span style="font-size:15px;font-weight:700;color:var(--t1)">Home</span></div>'
+    +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Payroll summary</div>'
+    +'<div style="font-size:13px;color:var(--t3);margin:2px 0 8px">'+TOTALS.period+' · '+TOTALS.employees+' employees</div>'
+    +'<div style="font-size:38px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:12px">'+fmt(TOTALS.gross)+'</div>'
+    +'<div style="margin-bottom:16px"><span class="'+(ready?'badge-g':'badge-a')+'">'+(ready?'Ready to run · '+TOTALS.payDate.split(',')[0]:'Paused · '+openCount+' item'+(openCount===1?'':'s')+' to review')+'</span></div>'
+    +barOnly(grossSegs, '$')
+    +'</div>';
 
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('home','Payroll · '+TOTALS.period,'Tag: 3a')
-  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px 8px;display:flex;flex-direction:column;gap:12px">'
-  +(openCount
-    ? '<div><span class="badge-a">Payroll paused</span></div>'
-    : '<div><span class="badge-g">Ready to run</span><div style="font-size:12px;color:var(--t3);margin-top:6px">Scheduled for '+TOTALS.payDate+'</div></div>')
-  +statsAndBarsCard(TOTALS.gross, hoursTotal, grossSegs)
+  +'<div style="flex:1;min-height:0;overflow-y:auto">'
+  +hero
+  +'<div style="padding:14px 18px 8px;display:flex;flex-direction:column;gap:12px">'
+  +(S.scenarioApplied&&S.scenarioDraft
+    ? '<div class="tap" onclick="go(\'scenarioModel\')" style="display:flex;align-items:center;gap:10px;background:#F5F3FF;border-radius:14px;padding:12px 14px"><span class="badge-ai">✦ AI</span><span style="flex:1;font-size:12.5px;color:#3B0764;line-height:1.5">Scenario draft applied · <span style="font-weight:700">'+S.scenarioDraft+'</span></span><span class="chevron" style="color:#7C3AED">›</span></div>'
+    : '')
   +excBlock
   +'<div class="card cp">'
     +'<div class="tap" onclick="S.editHoursOpenId=null;go(\'payrollEmployeeList\')" style="display:flex;align-items:center;margin-bottom:11px"><span style="flex:1;font-size:13px;font-weight:600">'+TOTALS.employees+' employees</span><span style="font-size:11px;color:var(--t3);margin-right:2px">Edit hours</span><span class="chevron">›</span></div>'
@@ -1065,6 +1093,7 @@ function payrollReview(){
     +'<span style="width:28px;height:28px;border-radius:50%;background:var(--gb);color:var(--g);font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</span>'
     +'<span style="flex:1;font-size:13px;font-weight:600;color:var(--t1)">All compliance checks passed</span>'
     +'<span class="chevron">›</span>'
+  +'</div>'
   +'</div>'
   +'</div>'
   +'<div style="padding:10px 18px 28px;background:#fff;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0">'
@@ -1232,7 +1261,7 @@ function setupEmployeeControls(empId){
   // One control grammar: every cell white, 44px, radius 12; steppers 32px; labels 11px caps
   function cellLbl(t){ return '<div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px">'+t+'</div>'; }
   function moneyCell(id,value,handler,wide){
-    return '<div style="display:flex;align-items:center;background:#fff;border-radius:12px;height:44px;padding:0 12px" onclick="event.stopPropagation()">'
+    return '<div style="display:flex;align-items:center;background:var(--card);border-radius:12px;height:44px;padding:0 12px" onclick="event.stopPropagation()">'
       +'<span style="font-size:14px;color:var(--t3);margin-right:3px">$</span>'
       +'<input type="number" '+(id?'id="'+id+'" ':'')+'value="'+value+'" oninput="'+handler+'" style="width:100%;min-width:0;border:none;padding:0;font-size:15px;font-weight:700;color:var(--t1);outline:none;background:none;font-variant-numeric:tabular-nums">'
       +'</div>';
@@ -1247,7 +1276,7 @@ function setupEmployeeControls(empId){
     +'<div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px">'
       +'<div>'+cellLbl('Hourly rate')+moneyCell(null,hourlyRate,'adjHourlyRateInline(\''+empId+'\',this.value)')+'</div>'
       +'<div>'+cellLbl('OT multiplier')
-        +'<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:12px;height:44px;padding:0 6px" onclick="event.stopPropagation()">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:12px;height:44px;padding:0 6px" onclick="event.stopPropagation()">'
         +'<button class="stepbtn" onclick="event.stopPropagation();adjOtMultiplier(\''+empId+'\',-0.1)">\u2212</button>'
         +'<span id="ot-mult-'+empId+'" style="font-size:15px;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums">'+e.otMultiplier.toFixed(1)+'\u00D7</span>'
         +'<button class="stepbtn" onclick="event.stopPropagation();adjOtMultiplier(\''+empId+'\',0.1)">+</button>'
@@ -1339,29 +1368,33 @@ function finalApproval(){
       +'<span style="font-size:13px;font-weight:700;color:var(--t1)">'+value+'</span>'
       +'</div>';
   }
-  return '<div style="background:#fff;flex:1;display:flex;flex-direction:column">'
-  +subHeader('payrollReview','Final approval','Tag: 3e')
-  +'<div class="pi" style="padding-top:22px">'
-  +'<div style="font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.02em;margin-bottom:6px">Ready to submit?</div>'
-  +'<div class="stat2" style="margin:10px 0 28px"><div><div class="s-val">'+fmt(TOTALS.gross)+'</div><div class="s-lbl">gross</div></div><div><div class="s-val">'+TOTALS.hours+'<span style="font-size:14px;font-weight:600;color:var(--t3);letter-spacing:0"> hrs</span></div><div class="s-lbl">total</div></div></div>'
+  var hero='<div style="background:var(--gb);border-bottom:1px solid var(--gbr);padding:13px 19px 18px">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="bk" onclick="go(\'payrollReview\')" style="color:var(--t2)">←</button><span style="font-size:15px;font-weight:700;color:var(--t1)">Final approval</span></div>'
+    +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Ready to submit</div>'
+    +'<div style="font-size:38px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;margin:6px 0 4px">'+fmt(TOTALS.gross)+'</div>'
+    +'<div style="font-size:13px;color:var(--t3)">'+TOTALS.hours+' hrs · runs '+TOTALS.payDate.split(',')[0]+'</div>'
+    +'</div>';
+  return '<div style="background:#fff;flex:1;display:flex;flex-direction:column;overflow:hidden">'
+  +hero
+  +'<div style="flex:1;min-height:0;overflow-y:auto;padding:8px 19px 12px;display:flex;flex-direction:column">'
   +row(iconGlyph('calendar','#2563EB',14),'#EFF6FF','#2563EB','Pay date',TOTALS.payDate,true)
   +row(iconGlyph('users','#7C3AED',14),'#F5F3FF','#7C3AED','Employees',TOTALS.employees)
   +row(iconGlyph('dollar','var(--g)',14),'var(--gb)','var(--g)','Net deposits',fmt(TOTALS.netDeposits))
   +row(iconGlyph('bank','#D97706',14),'#FFFBEB','#D97706','Debited from '+BANK.name.split(' ')[0],'−'+fmt(BANK.upcomingDebit))
-  +'<div style="background:var(--gb);border:1px solid var(--gbr);border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:10px">'
-  +'<span style="font-size:12px;font-weight:600;color:var(--gt)">Balance after payroll</span>'
-  +'<span style="font-size:15px;font-weight:800;color:var(--gt);font-variant-numeric:tabular-nums">'+fmt(BANK.balance-BANK.upcomingDebit)+'</span>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid rgba(0,0,0,.06)">'
+  +'<span style="font-size:12px;color:var(--t3)">Balance after payroll</span>'
+  +'<span style="font-size:13px;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums">'+fmt(BANK.balance-BANK.upcomingDebit)+'</span>'
   +'</div>'
-  +'<div style="font-size:12px;color:var(--t3);line-height:1.5;margin-top:22px">Taxes file automatically after you submit.</div>'
+  +'<div style="font-size:12px;color:var(--t3);line-height:1.5;margin-top:14px">Taxes file automatically after you submit.</div>'
   +'<div style="flex:1"></div>'
-  +'<button id="hold-btn" class="btn btn-k" style="position:relative;overflow:hidden;user-select:none;-webkit-user-select:none"'
+  +'<button id="hold-btn" class="btn btn-k" style="position:relative;overflow:hidden;user-select:none;-webkit-user-select:none;margin-top:20px"'
     +' onmousedown="startHold()" onmouseup="cancelHold()" onmouseleave="cancelHold()"'
     +' ontouchstart="startHold();event.preventDefault()" ontouchend="cancelHold()">'
     +'<span id="hold-fill" style="position:absolute;inset:0;background:rgba(255,255,255,.22);transform:scaleX(0);transform-origin:left;transition:none;pointer-events:none"></span>'
     +'<span style="position:relative">Hold to submit payroll</span>'
   +'</button>'
-  +'<div style="text-align:center;font-size:11px;color:var(--t4);margin-top:-4px">Press and hold — releases '+fmt(BANK.upcomingDebit)+' from '+BANK.name.split(' ')[0]+'</div>'
-  +'<button class="btn" style="background:none;color:var(--t3);font-weight:500" onclick="go(\'payrollReview\')">Make changes</button>'
+  +'<div style="text-align:center;font-size:11px;color:var(--t4);margin-top:8px">Press and hold — releases '+fmt(BANK.upcomingDebit)+' from '+BANK.name.split(' ')[0]+'</div>'
+  +'<button class="btn" style="background:none;color:var(--t3);font-weight:500;margin-top:4px" onclick="go(\'payrollReview\')">Make changes</button>'
   +'</div></div>';
 }
 // Hold-to-confirm: 900ms press releases the payroll. Friction proportional to stakes.
@@ -1447,7 +1480,7 @@ function sendDDReminder(){
   setTimeout(function(){
     S.ddPending=false; S.ddResolved=true;
     if(S.screen==='payrollReview') re();
-  },6000);
+  },2000);
 }
 // Overtime exception — keep as-is / edit hours / revert (ported behaviour from
 // the original changeReview). Regular pay for Marcus's week is fixed at $2,686;
@@ -1466,34 +1499,38 @@ function otDecide(){
   var dec=S.otDecision;
   var sc=otScenario();
 
-  function decBtn(val,label,amount,desc,icon,danger){
+  // tint: {bg, border, text, iconStroke, chip} — selected state uses a soft
+  // fill complementary to the icon color (green/purple/amber).
+  function decBtn(val,label,amount,desc,tint){
     var sel=dec===val;
-    var bg=sel?(danger?'var(--ab)':'var(--ink)'):'#fff';
-    var fg=sel?(danger?'var(--at)':'#fff'):'var(--t1)';
-    var sub=sel?(danger?'#92400E':'rgba(255,255,255,.7)'):'var(--t3)';
-    var bdr=sel?(danger?'1.5px solid var(--abr)':'1.5px solid var(--navy)'):'1.5px solid #DDE1E8';
-    var shadow=sel&&!danger?';box-shadow:none':'';
-    return '<button class="tap" onclick="S.otDecision=\''+val+'\';re()" style="width:100%;text-align:left;padding:14px 16px;border-radius:13px;border:'+bdr+';background:'+bg+';cursor:pointer;display:flex;align-items:center;gap:13px'+shadow+'">'
-      +'<div style="width:36px;height:36px;border-radius:10px;background:'+(sel?(danger?'rgba(217,119,6,.15)':'rgba(255,255,255,.15)'):'#F2F4F7')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+icon+'</div>'
+    var bg=sel?tint.bg:'#fff';
+    var fg=sel?tint.text:'var(--t1)';
+    var sub=sel?tint.text:'var(--t3)';
+    var bdr='1.5px solid '+(sel?tint.border:'#DDE1E8');
+    var icon='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+tint.iconStroke+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+tint.path+'</svg>';
+    return '<button class="tap" onclick="S.otDecision=\''+val+'\';re()" style="width:100%;text-align:left;padding:14px 16px;border-radius:13px;border:'+bdr+';background:'+bg+';cursor:pointer;display:flex;align-items:center;gap:13px">'
+      +'<div style="width:36px;height:36px;border-radius:10px;background:'+tint.chip+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+icon+'</div>'
       +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:14px;font-weight:700;color:'+fg+'">'+label+'</span><span style="font-size:14px;font-weight:800;color:'+fg+';font-variant-numeric:tabular-nums">'+amount+'</span></div>'
-      +'<div id="'+(val==='adjust'?'ot-adj-sub':'')+'" style="font-size:12px;color:'+sub+';margin-top:2px;line-height:1.4">'+desc+'</div></div>'
+      +'<div style="font-size:12px;color:'+sub+';margin-top:2px;line-height:1.4">'+desc+'</div></div>'
     +'</button>';
   }
-
-  var icoKeep='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(dec==='keep'?'#fff':'var(--g)')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  var icoEdit='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(dec==='adjust'?'#fff':'var(--pu)')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-  var icoRev='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--a)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>';
+  var TINT={
+    keep:{bg:'var(--gb)',border:'var(--gbr)',text:'var(--gt)',iconStroke:'var(--g)',chip:'rgba(5,150,105,.12)',path:'<polyline points="20 6 9 17 4 12"/>'},
+    edit:{bg:'#F5F3FF',border:'#DDD6FE',text:'#5B21B6',iconStroke:'var(--pu)',chip:'rgba(124,58,237,.12)',path:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>'},
+    remove:{bg:'var(--ab)',border:'var(--abr)',text:'var(--at)',iconStroke:'var(--a)',chip:'rgba(217,119,6,.12)',path:'<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>'}
+  };
 
   var adjSub = dec==='adjust' ? 'Adjusted: '+sc.hrs+' OT hrs \u00D7 1.5\u00D7 = '+fmt(sc.otPay) : 'Change the overtime hours or rate';
 
-  // Edit-hours renders as ONE fused component when selected: dark header row
-  // + attached controls section, single container, single radius.
+  // Edit-hours fused component: header row (purple-tinted when selected)
+  // + attached controls, single container/radius.
   function adjustBlock(){
-    var sel=dec==='adjust';
-    var head='<div class="tap" onclick="S.otDecision=\'adjust\';re()" style="padding:14px 16px;background:'+(sel?'var(--ink)':'#fff')+';display:flex;align-items:center;gap:13px;cursor:pointer">'
-      +'<div style="width:36px;height:36px;border-radius:10px;background:'+(sel?'rgba(255,255,255,.15)':'#F2F4F7')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+icoEdit+'</div>'
-      +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:14px;font-weight:700;color:'+(sel?'#fff':'var(--t1)')+'">Edit hours</span><span style="font-size:14px;font-weight:800;color:'+(sel?'#fff':'var(--t1)')+';font-variant-numeric:tabular-nums">'+fmt(sc.total)+'</span></div>'
-      +'<div id="ot-adj-sub" style="font-size:12px;color:'+(sel?'rgba(255,255,255,.7)':'var(--t3)')+';margin-top:2px;line-height:1.4">'+adjSub+'</div></div>'
+    var sel=dec==='adjust'; var t=TINT.edit;
+    var icon='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+t.iconStroke+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+t.path+'</svg>';
+    var head='<div class="tap" onclick="S.otDecision=\'adjust\';re()" style="padding:14px 16px;background:'+(sel?t.bg:'#fff')+';display:flex;align-items:center;gap:13px;cursor:pointer">'
+      +'<div style="width:36px;height:36px;border-radius:10px;background:'+t.chip+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+icon+'</div>'
+      +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:14px;font-weight:700;color:'+(sel?t.text:'var(--t1)')+'">Edit hours</span><span style="font-size:14px;font-weight:800;color:'+(sel?t.text:'var(--t1)')+';font-variant-numeric:tabular-nums">'+fmt(sc.total)+'</span></div>'
+      +'<div id="ot-adj-sub" style="font-size:12px;color:'+(sel?t.text:'var(--t3)')+';margin-top:2px;line-height:1.4">'+adjSub+'</div></div>'
       +'</div>';
     var ctl='';
     if(sel){
@@ -1506,12 +1543,12 @@ function otDecide(){
           +'<button class="stepbtn" onclick="event.stopPropagation();updateOTAdjust(\''+f+'\',1)">+</button>'
           +'</div></div>';
       }
-      ctl='<div style="background:var(--card);padding:14px 16px;display:flex;flex-direction:column;gap:12px;border-top:1px solid rgba(0,0,0,.06)">'
+      ctl='<div style="background:#fff;padding:14px 16px;display:flex;flex-direction:column;gap:12px;border-top:1px solid '+t.border+'">'
         +stepRow('Overtime hours','ot-adj-hrs',sc.hrs,'hrs')
         +stepRow('Hourly rate','ot-adj-rate','$'+sc.rate,'rate')
         +'</div>';
     }
-    return '<div style="border-radius:13px;border:1.5px solid '+(sel?'var(--ink)':'#DDE1E8')+';overflow:hidden">'+head+ctl+'</div>';
+    return '<div style="border-radius:13px;border:1.5px solid '+(sel?t.border:'#DDE1E8')+';overflow:hidden">'+head+ctl+'</div>';
   }
 
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
@@ -1542,9 +1579,9 @@ function otDecide(){
     // Decisions as action buttons
     +'<div style="padding:0 20px;display:flex;flex-direction:column;gap:8px">'
       +'<div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:2px">What do you want to do?</div>'
-      +decBtn('keep','Approve overtime',fmt(OT_REG+204),'Pay the full 44 hours including OT',icoKeep,false)
+      +decBtn('keep','Approve overtime',fmt(OT_REG+204),'Pay the full 44 hours including OT',TINT.keep)
       +adjustBlock()
-      +decBtn('remove','Remove overtime',fmt(OT_REG),'Marcus is paid regular hours only \u2014 removes $204',icoRev,true)
+      +decBtn('remove','Remove overtime',fmt(OT_REG),'Marcus is paid regular hours only \u2014 removes $204',TINT.remove)
     +'</div>'
     +'<div style="height:16px"></div>'
   +'</div>'
@@ -1595,13 +1632,15 @@ function team(){
   +'<div><div class="pt">Team</div><div class="ps">'+EMP.length+' employees'+(pendingCount?' · '+pendingCount+' pending':'')+' · Tag: 5a</div></div>'
   +'<button onclick="showAddEmpSheet()" style="background:var(--navy);color:#fff;border:none;border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">+ Add</button>'
   +'</div>'
-  +'<div style="padding:13px 18px;display:flex;flex-direction:column;gap:7px;flex:1;overflow-y:auto">'
-  +EMP.map(function(e){
+  +'<div style="padding:13px 18px;flex:1;overflow-y:auto">'
+  +'<div style="border:0.5px solid var(--bd);border-radius:16px;overflow:hidden">'
+  +EMP.map(function(e,i){
     var p=isPending(e);
-    return '<div class="row tap" onclick="showEmp(\''+e.id+'\',\'team\')">'+av(e.id,p,34)
+    return '<div class="tap" onclick="showEmp(\''+e.id+'\',\'team\')" style="display:flex;align-items:center;gap:11px;padding:13px 15px;'+(i<EMP.length-1?'border-bottom:0.5px solid var(--bd);':'')+'">'+av(e.id,p,34)
     +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.type+' · '+e.rate+'</div></div>'
     +'<span class="'+(p?'badge-a':'badge-g')+'">'+(p?'Pending':'Active')+'</span></div>';
   }).join('')
+  +'</div>'
   +'</div></div>';
 }
 function showAddEmpSheet(){
@@ -1638,7 +1677,7 @@ function empDetail(){
     +[['Gross pay','$'+ytd.g.toLocaleString()],['Net pay','$'+ytd.n.toLocaleString()],['Taxes withheld','$'+ytd.t.toLocaleString()],['401k contributions','$'+ytd.k.toLocaleString()]]
     .map(function(r,i,arr){return '<div style="display:flex;justify-content:space-between;padding:7px 0;'+(i<arr.length-1?'border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><span style="font-size:12px;color:var(--t3)">'+r[0]+'</span><span style="font-size:13px;font-weight:700;color:var(--t1)">'+r[1]+'</span></div>';}).join('')
     +'</div><div><div class="sl" style="margin-bottom:7px">Pay history</div>'
-    +(e.hist&&e.hist.length?e.hist.map(function(h){return '<div class="row tap" onclick="S.homeTab=\'past\';go(\'home\')" style="margin-bottom:5px"><div style="width:34px;height:34px;border-radius:9px;background:'+(h.s==='Pending'?'var(--ab)':h.s==='Scheduled'?'#F0F9FF':'var(--gb)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(h.s==='Pending'?iconGlyph('alert','var(--at)',15):h.s==='Scheduled'?iconGlyph('calendar','#2563EB',15):iconGlyph('check','var(--g)',15))+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+h.d+'</div><div style="font-size:11px;color:var(--t3)">Gross $'+h.amt.toLocaleString()+' · Net $'+h.net.toLocaleString()+'</div></div><span class="'+(h.s==='Pending'?'badge-a':h.s==='Scheduled'?'':'badge-g')+'" style="'+(h.s==='Scheduled'?'font-size:11px;color:var(--t3)':'')+'">'+h.s+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--t3)">No history yet</div>')+'</div></div>';
+    +(e.hist&&e.hist.length?e.hist.map(function(h){return '<div class="row tap" onclick="toast(this.getAttribute(\'data-h\'))" data-h="'+h.d+' · gross $'+h.amt.toLocaleString()+' · net $'+h.net.toLocaleString()+' · '+h.s+'" style="margin-bottom:5px"><div style="width:34px;height:34px;border-radius:9px;background:'+(h.s==='Pending'?'var(--ab)':h.s==='Scheduled'?'#F0F9FF':'var(--gb)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(h.s==='Pending'?iconGlyph('alert','var(--at)',15):h.s==='Scheduled'?iconGlyph('calendar','#2563EB',15):iconGlyph('check','var(--g)',15))+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+h.d+'</div><div style="font-size:11px;color:var(--t3)">Gross $'+h.amt.toLocaleString()+' · Net $'+h.net.toLocaleString()+'</div></div><span class="'+(h.s==='Pending'?'badge-a':h.s==='Scheduled'?'':'badge-g')+'" style="'+(h.s==='Scheduled'?'font-size:11px;color:var(--t3)':'')+'">'+h.s+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--t3)">No history yet</div>')+'</div></div>';
   return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
   +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\''+(S.from||'team')+'\')">←</button><div style="flex:1"><div style="font-size:11px;color:var(--t3)">'+e.type+' · Tag: 5b</div><div class="pt">'+e.name+'</div></div><span class="'+(ip?'badge-a':'badge-g')+'">'+(ip?'Pending':'Active')+'</span></div>'
   +'<div style="padding:13px 18px 20px;display:flex;flex-direction:column;gap:12px">'
@@ -1668,10 +1707,10 @@ function showEmpActions(){
   var ip=isPending(e);
   var items=[
     {label:'Edit pay rate',       icon:'dollar',  action:"hideSheet();go('rateChange')"},
-    {label:'Change title',        icon:'edit',    action:'hideSheet()'},
+    {label:'Change title',        icon:'edit',    action:"hideSheet();toast('Title updated')"},
     {label:'Run off-cycle payment',icon:'payment',action:"hideSheet();openOffCycleSheet('"+e.id+"')"},
-    {label:'Change pay schedule', icon:'cal',     action:'hideSheet()'},
-    {label:'View documents',      icon:'doc',     action:'hideSheet()'},
+    {label:'Change pay schedule', icon:'cal',     action:"hideSheet();toast('Pay schedule updated')"},
+    {label:'View documents',      icon:'doc',     action:"hideSheet();toast('No documents on file yet')"},
     {label:'End employment',      icon:'x',       action:"hideSheet();startTerminate()", red:true},
   ];
   if(ip) items.unshift({label:'Send direct deposit reminder',icon:'bell',action:"hideSheet();go('ddFix')"});
@@ -1949,7 +1988,7 @@ function scenarioModel(){
     +'<div style="background:var(--gb);border:1px solid var(--gbr);border-radius:12px;padding:10px 13px"><div style="font-size:9px;color:var(--g);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:600">Recommendation</div><p style="margin:0;font-size:12px;color:var(--gt);line-height:1.55">'+r.recommendation+'</p></div>'
     +(S.scenarioApplied
       ?'<div style="background:var(--gb);border:1px solid var(--gbr);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:9px"><span style="color:var(--g);font-weight:700">✓</span><span style="font-size:12.5px;font-weight:600;color:var(--gt)">Applied as a draft to your next payroll — review it there before submitting.</span></div>'
-      :'<button class="btn btn-k" onclick="S.scenarioApplied=true;re()">Apply to next payroll</button>')
+      :'<button class="btn btn-k" onclick="S.scenarioDraft='+"'"+'+(S.scenarioMode===\'target\'?\'Budget target\':\'What-if scenario\')+'+"'"+';S.scenarioApplied=true;toast(\'Draft applied to next payroll\');go(\'payrollReview\')">Apply to next payroll</button>')
     :'')
   +'<button class="btn btn-o" onclick="go(\'home\')">Done</button>'
   +'</div></div>';
@@ -2308,7 +2347,7 @@ function draw(s){
   var m={
     chooser:chooser,
     home:home,
-    connectBankStep:connectBankStep, collectMethod:collectMethod, connectSheet:connectSheet, reviewHours:reviewHours,
+    connectBankStep:connectBankStep, collectMethod:collectMethod, reviewHours:reviewHours,
     payrollReview:payrollReview, payrollEmployeeList:payrollEmployeeList, complianceDetail:complianceDetail, finalApproval:finalApproval, submitted:submitted,
     ddFix:ddFix, otDecide:otDecide,
     team:team, empDetail:empDetail,
