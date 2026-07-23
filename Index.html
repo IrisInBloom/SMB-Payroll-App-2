@@ -1077,7 +1077,8 @@ function payrollReview(){
     +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button class="bk" onclick="go(\'home\')" style="color:var(--t2)">←</button><span style="font-size:15px;font-weight:700;color:var(--t1)">Home</span></div>'
     +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Payroll summary</div>'
     +'<div style="font-size:13px;color:var(--t3);margin:2px 0 8px">'+TOTALS.period+' · '+TOTALS.employees+' employees</div>'
-    +'<div style="font-size:38px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:12px">'+fmt(TOTALS.gross)+'</div>'
+    +'<div style="font-size:38px;font-weight:800;color:var(--t1);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:4px">'+fmt(TOTALS.gross)+'</div>'
+    +'<div style="font-size:16px;font-weight:700;color:var(--t1);margin-bottom:12px">'+TOTALS.hours+' hrs</div>'
     +'<div style="margin-bottom:16px"><span class="'+(ready?'badge-g':'badge-a')+'">'+(ready?'Ready to run · '+TOTALS.payDate.split(',')[0]:'Paused · '+openCount+' item'+(openCount===1?'':'s')+' to review')+'</span></div>'
     +barOnly(grossSegs, '$')
     +'</div>';
