@@ -449,7 +449,7 @@ function enterDemo(path){
 function chooser(){
   function opt(path,title,sub,tag){
     return '<div class="tap" onclick="enterDemo(\''+path+'\')" style="padding:16px;border-radius:16px;border:1.5px solid #E5E7EB;background:#fff;display:flex;flex-direction:column;gap:4px;cursor:pointer">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:15px;font-weight:700;color:var(--t1)">'+title+'</span><span class="'+tag[1]+'">'+tag[0]+'</span></div>'
+      +'<div style="font-size:15px;font-weight:700;color:var(--t1)">'+title+'</div>'
       +'<div style="font-size:12px;color:var(--t3);line-height:1.5">'+sub+'</div>'
       +'</div>';
   }
@@ -841,7 +841,7 @@ function collectMethod(){
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
   +(S.setupFlow
     ? stepHeader('connectBankStep','Step 2 of 2')
-    : subHeader('home','People and hours','Tag: 2a'))
+    : subHeader('home','People and hours'))
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
   +(S.setupFlow?pageTitle('People and hours','How do you want to bring in hours for this period?'):'<div style="font-size:13px;color:var(--t3);margin-bottom:2px">How do you want to bring in hours for this period?</div>')
   +card('upload','Upload a payroll register','A prior register — .csv, .xlsx, or .pdf')
@@ -1169,7 +1169,7 @@ function complianceDetail(){
     {name:'Pay schedule lock',note:'Bi-weekly schedule locked for this period — no changes pending.'},
   ];
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader(S.from||'payrollReview','Compliance','Tag: 3a')
+  +subHeader(S.from||'payrollReview','Compliance')
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:12px">'
   +'<div style="background:var(--gb);border:1px solid var(--gbr);border-radius:16px;padding:22px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px">'
     +'<div style="font-size:20px;color:var(--g)">✓</div>'
@@ -1451,7 +1451,7 @@ function ddFix(){
     ? 'Hi Maria \u2014 your next paycheck is '+TOTALS.payDate.split(',')[0]+'. Add your direct deposit info so we can pay you on time: paylocity.com/setup/maria'
     : 'Hi Maria,\n\nYour next paycheck is scheduled for '+TOTALS.payDate.split(',')[0]+', but we don\u2019t have a bank account on file for you yet.\n\nAdd your direct deposit info here \u2014 it takes about 2 minutes:\npaylocity.com/setup/maria\n\nThanks,\nPrism Inc. Payroll';
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('payrollReview','Direct deposit','Tag: 4b')
+  +subHeader('payrollReview','Direct deposit')
   +'<div style="flex:1;min-height:0;overflow-y:auto">'
     // Person header — avatar + name + role, no container
     +'<div style="padding:20px 20px 0;display:flex;align-items:center;gap:14px">'
@@ -1566,7 +1566,7 @@ function otDecide(){
   }
 
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('payrollReview','Overtime','Tag: 4c')
+  +subHeader('payrollReview','Overtime')
   +'<div style="flex:1;min-height:0;overflow-y:auto">'
     // Person header
     +'<div style="padding:20px 20px 0;display:flex;align-items:center;gap:14px">'
@@ -1630,7 +1630,7 @@ function team(){
   if(!S.employeesLoaded){
     return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
     +'<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">'
-    +'<div><div class="pt">Team</div><div class="ps">No employees yet · Tag: 5a</div></div>'
+    +'<div><div class="pt">Team</div><div class="ps">No employees yet</div></div>'
     +'<button onclick="showAddEmpSheet()" style="background:var(--navy);color:#fff;border:none;border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">+ Add</button>'
     +'</div>'
     +'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 28px;gap:12px">'
@@ -1643,7 +1643,7 @@ function team(){
   }
   return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
   +'<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">'
-  +'<div><div class="pt">Team</div><div class="ps">'+EMP.length+' employees'+(pendingCount?' · '+pendingCount+' pending':'')+' · Tag: 5a</div></div>'
+  +'<div><div class="pt">Team</div><div class="ps">'+EMP.length+' employees'+(pendingCount?' · '+pendingCount+' pending':'')+'</div></div>'
   +'<button onclick="showAddEmpSheet()" style="background:var(--navy);color:#fff;border:none;border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">+ Add</button>'
   +'</div>'
   +'<div style="padding:13px 18px;flex:1;overflow-y:auto">'
@@ -1658,7 +1658,7 @@ function team(){
   +'</div></div>';
 }
 function showAddEmpSheet(){
-  showSheet('<div style="padding:20px 20px 32px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:16px;font-weight:700">Hire · Tag: 5d</div><button onclick="hideSheet()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div><div style="display:flex;flex-direction:column;gap:11px"><div><span class="lbl">Full name</span><input class="inp" id="ne-name" placeholder="e.g. Jordan Smith"></div><div><span class="lbl">Job title</span><input class="inp" id="ne-role" placeholder="e.g. Marketing Manager"></div><div><span class="lbl">Employment type</span><div style="display:flex;gap:6px"><button id="nb-s" onclick="document.getElementById(\'nb-s\').style.background=\'var(--navy)\';document.getElementById(\'nb-s\').style.color=\'#fff\';document.getElementById(\'nb-h\').style.background=\'#fff\';document.getElementById(\'nb-h\').style.color=\'var(--t2)\'" style="flex:1;padding:10px;background:var(--navy);color:#fff;border:1.5px solid var(--navy);border-radius:10px;font-size:13px;cursor:pointer">Salaried</button><button id="nb-h" onclick="document.getElementById(\'nb-h\').style.background=\'var(--navy)\';document.getElementById(\'nb-h\').style.color=\'#fff\';document.getElementById(\'nb-s\').style.background=\'#fff\';document.getElementById(\'nb-s\').style.color=\'var(--t2)\'" style="flex:1;padding:10px;background:#fff;color:var(--t2);border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;cursor:pointer">Hourly</button></div></div><div><span class="lbl">Annual salary or hourly rate</span><input class="inp" id="ne-rate" placeholder="e.g. $65,000 or $28/hr"></div><div><span class="lbl">Start date</span><input class="inp" id="ne-start" type="date"></div><button onclick="saveNewEmp()" class="btn btn-k" style="margin-top:4px">Add to team</button></div></div>');
+  showSheet('<div style="padding:20px 20px 32px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:16px;font-weight:700">Hire</div><button onclick="hideSheet()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div><div style="display:flex;flex-direction:column;gap:11px"><div><span class="lbl">Full name</span><input class="inp" id="ne-name" placeholder="e.g. Jordan Smith"></div><div><span class="lbl">Job title</span><input class="inp" id="ne-role" placeholder="e.g. Marketing Manager"></div><div><span class="lbl">Employment type</span><div style="display:flex;gap:6px"><button id="nb-s" onclick="document.getElementById(\'nb-s\').style.background=\'var(--navy)\';document.getElementById(\'nb-s\').style.color=\'#fff\';document.getElementById(\'nb-h\').style.background=\'#fff\';document.getElementById(\'nb-h\').style.color=\'var(--t2)\'" style="flex:1;padding:10px;background:var(--navy);color:#fff;border:1.5px solid var(--navy);border-radius:10px;font-size:13px;cursor:pointer">Salaried</button><button id="nb-h" onclick="document.getElementById(\'nb-h\').style.background=\'var(--navy)\';document.getElementById(\'nb-h\').style.color=\'#fff\';document.getElementById(\'nb-s\').style.background=\'#fff\';document.getElementById(\'nb-s\').style.color=\'var(--t2)\'" style="flex:1;padding:10px;background:#fff;color:var(--t2);border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;cursor:pointer">Hourly</button></div></div><div><span class="lbl">Annual salary or hourly rate</span><input class="inp" id="ne-rate" placeholder="e.g. $65,000 or $28/hr"></div><div><span class="lbl">Start date</span><input class="inp" id="ne-start" type="date"></div><button onclick="saveNewEmp()" class="btn btn-k" style="margin-top:4px">Add to team</button></div></div>');
 }
 function saveNewEmp(){
   var name=document.getElementById('ne-name')?.value;
@@ -1693,7 +1693,7 @@ function empDetail(){
     +'</div><div><div class="sl" style="margin-bottom:7px">Pay history</div>'
     +(e.hist&&e.hist.length?e.hist.map(function(h){return '<div class="row tap" onclick="toast(this.getAttribute(\'data-h\'))" data-h="'+h.d+' · gross $'+h.amt.toLocaleString()+' · net $'+h.net.toLocaleString()+' · '+h.s+'" style="margin-bottom:5px"><div style="width:34px;height:34px;border-radius:9px;background:'+(h.s==='Pending'?'var(--ab)':h.s==='Scheduled'?'#F0F9FF':'var(--gb)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(h.s==='Pending'?iconGlyph('alert','var(--at)',15):h.s==='Scheduled'?iconGlyph('calendar','#2563EB',15):iconGlyph('check','var(--g)',15))+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+h.d+'</div><div style="font-size:11px;color:var(--t3)">Gross $'+h.amt.toLocaleString()+' · Net $'+h.net.toLocaleString()+'</div></div><span class="'+(h.s==='Pending'?'badge-a':h.s==='Scheduled'?'':'badge-g')+'" style="'+(h.s==='Scheduled'?'font-size:11px;color:var(--t3)':'')+'">'+h.s+'</span></div>';}).join(''):'<div style="font-size:12px;color:var(--t3)">No history yet</div>')+'</div></div>';
   return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
-  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\''+(S.from||'team')+'\')">←</button><div style="flex:1"><div style="font-size:11px;color:var(--t3)">'+e.type+' · Tag: 5b</div><div class="pt">'+e.name+'</div></div><span class="'+(ip?'badge-a':'badge-g')+'">'+(ip?'Pending':'Active')+'</span></div>'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\''+(S.from||'team')+'\')">←</button><div style="flex:1"><div style="font-size:11px;color:var(--t3)">'+e.type+'</div><div class="pt">'+e.name+'</div></div><span class="'+(ip?'badge-a':'badge-g')+'">'+(ip?'Pending':'Active')+'</span></div>'
   +'<div style="padding:13px 18px 20px;display:flex;flex-direction:column;gap:12px">'
   +'<div class="card cp" style="display:flex;align-items:center;gap:14px">'+av(e.id,ip,52)+'<div><div style="font-size:16px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3);margin-top:2px">'+e.role+'</div><div style="font-size:12px;color:var(--t3)">'+e.type+' · '+e.rate+'</div></div>'
   +'<button onclick="showEmpActions()" style="width:36px;height:36px;border-radius:50%;background:#F3F4F6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:flex-start;margin-left:auto"><svg width="16" height="4" viewBox="0 0 16 4" fill="none"><circle cx="2" cy="2" r="1.5" fill="#6B7280"/><circle cx="8" cy="2" r="1.5" fill="#6B7280"/><circle cx="14" cy="2" r="1.5" fill="#6B7280"/></svg></button></div>'
@@ -1744,7 +1744,7 @@ function showEmpActions(){
     '<div style="padding:0 0 30px">'
     +'<div style="padding:16px 18px 12px;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:10px">'
     +av(e.id,false,32)
-    +'<div><div style="font-size:14px;font-weight:700;color:var(--t1)">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.role+' · '+e.type+' · Tag: 5c</div></div>'
+    +'<div><div style="font-size:14px;font-weight:700;color:var(--t1)">'+e.name+'</div><div style="font-size:11px;color:var(--t3)">'+e.role+' · '+e.type+'</div></div>'
     +'<button onclick="hideSheet()" style="margin-left:auto;background:none;border:none;font-size:13px;color:var(--t3);cursor:pointer">Done</button>'
     +'</div>'
     +items.map(function(item,i){
@@ -1779,7 +1779,7 @@ function terminate(){
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
   +'<div class="ph" style="display:flex;align-items:center;gap:10px">'
   +'<button class="bk" onclick="go(\'empDetail\')">←</button>'
-  +'<div><div style="font-size:11px;color:var(--t3)">End employment · 1 of 2 · Tag: 5e</div><div class="pt">'+e.name+'</div></div></div>'
+  +'<div><div style="font-size:11px;color:var(--t3)">End employment · 1 of 2</div><div class="pt">'+e.name+'</div></div></div>'
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px">'
   +'<div class="card cp" style="display:flex;align-items:center;gap:12px">'+av(e.id,false,44)+'<div><div style="font-size:15px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3)">'+e.role+' · '+e.rate+'</div></div></div>'
   +'<div><div class="lbl" style="margin-bottom:8px">Reason for leaving</div><div style="display:flex;flex-direction:column;gap:8px">'
@@ -1809,7 +1809,7 @@ function termCalc(){
     +'<span style="font-size:11px;font-weight:600;color:'+(cost==='Free'?'var(--g)':'var(--t3)')+'">'+cost+'</span></div>';
   }
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'terminate\')">←</button><div><div style="font-size:11px;color:var(--t3)">Final pay · 2 of 2 · Tag: 5f</div><div class="pt">'+e.name+'</div></div></div>'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'terminate\')">←</button><div><div style="font-size:11px;color:var(--t3)">Final pay · 2 of 2</div><div class="pt">'+e.name+'</div></div></div>'
   +'<div style="flex:1;min-height:0;overflow-y:auto">'
   +'<div style="background:#fff;padding:20px 20px 18px;border-bottom:1px solid rgba(0,0,0,.06)">'
   +'<div style="font-size:10px;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Final paycheck (net)</div>'
@@ -1842,7 +1842,7 @@ function termConfirm(){
   var depDate=S.termPayout==='sameday'?'Today · same-day ACH':j.nextPayday;
   function row(l,v){return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:var(--t3)">'+l+'</span><span style="font-size:13px;font-weight:600;color:var(--t1)">'+v+'</span></div>';}
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'termCalc\')">←</button><div><div style="font-size:11px;color:var(--t3)">Confirm · Tag: 5g</div><div class="pt">End employment</div></div></div>'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'termCalc\')">←</button><div><div style="font-size:11px;color:var(--t3)">Confirm</div><div class="pt">End employment</div></div></div>'
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">'
   +'<div class="card cp" style="display:flex;align-items:center;gap:12px">'+av(e.id,false,44)+'<div><div style="font-size:15px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3)">'+e.role+'</div></div></div>'
   +'<div class="card cp">'
@@ -1872,7 +1872,7 @@ function termDone(){
   ];
   var rows=steps.map(function(s,i){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;'+(i<steps.length-1?'border-bottom:1px solid rgba(0,0,0,.05)':'')+'"><span style="font-size:12px;color:var(--t2);flex:1;line-height:1.45;margin-right:8px">'+s.t+'</span><span style="font-size:11px;color:var(--t3);flex-shrink:0">'+s.r+'</span></div>';}).join('');
   return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
-  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><div><div style="font-size:11px;color:var(--t3)">Employment ended · Tag: 5h</div><div class="pt">What happens next</div></div></div>'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><div><div style="font-size:11px;color:var(--t3)">Employment ended</div><div class="pt">What happens next</div></div></div>'
   +'<div class="pi">'
   +'<div class="card cp" style="text-align:center"><div style="width:46px;height:46px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:20px;color:var(--g)">✓</div>'
   +'<div style="font-size:16px;font-weight:700;color:var(--t1);margin-bottom:3px">Final pay queued for '+e.name+'</div>'
@@ -1890,7 +1890,7 @@ function rateChange(){
   var isHourly=e.type==='Hourly';
   var when=S.rateWhen;
   return '<div style="background:#fff;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'empDetail\')">←</button><div><div style="font-size:11px;color:var(--t3)">Tag: 6a</div><div class="pt">Change pay rate</div></div></div>'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="go(\'empDetail\')">←</button><div><div class="pt">Change pay rate</div></div></div>'
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
   +'<div class="card cp" style="display:flex;align-items:center;gap:12px">'+av(e.id,false,40)+'<div><div style="font-size:14px;font-weight:700">'+e.name+'</div><div style="font-size:12px;color:var(--t3)">Current: '+e.rate+'</div></div></div>'
   +'<div><span class="lbl">New '+(isHourly?'hourly rate':'annual salary')+'</span><div style="display:flex;align-items:center;background:#fff;border:1.5px solid #E5E7EB;border-radius:11px;overflow:hidden"><span style="padding:0 12px;font-size:16px;color:var(--t3)">$</span><input type="number" oninput="S.rateNewValue=this.value;re()" value="'+S.rateNewValue+'" placeholder="'+(isHourly?'36.00':'70,000')+'" style="flex:1;border:none;padding:13px 0;font-size:16px;font-weight:600;color:var(--t1);outline:none;background:none"></div></div>'
@@ -1912,7 +1912,7 @@ function rateConfirm(){
   var impact=isHourly?Math.round((newVal-oldVal)*80):Math.round((newVal-oldVal)/26);
   function row(l,v){return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:12px;color:var(--t3)">'+l+'</span><span style="font-size:13px;font-weight:600;color:var(--t1)">'+v+'</span></div>';}
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('rateChange','Confirm change','Tag: 6b')
+  +subHeader('rateChange','Confirm change')
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
   +'<div class="card cp">'
   +row('Before',e.rate)
@@ -1957,7 +1957,7 @@ function offCycleSheetBody(){
   var isToday=pd==='today';
   var recip=S.paymentRecipient;
   return '<div style="padding:20px 20px 32px">'
-  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:16px;font-weight:700">Off-cycle payment · Tag: 7a/7b</div><button onclick="hideSheet();resetPaymentForm()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:16px;font-weight:700">Off-cycle payment</div><button onclick="hideSheet();resetPaymentForm()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">✕</button></div>'
   +'<div style="display:flex;flex-direction:column;gap:12px">'
   +'<div><span class="lbl">Recipient</span><select class="inp" style="background:#fff" onchange="S.paymentRecipient=this.value;document.getElementById(\'sheet-content\').innerHTML=offCycleSheetBody()"><option value="">Select employee</option>'
   +EMP.map(function(e){return '<option value="'+e.id+'"'+(recip===e.id?' selected':'')+'>'+e.name+'</option>';}).join('')
@@ -1984,7 +1984,7 @@ function resetPaymentForm(){S.paymentAmount='';S.paymentMemo='';S.paymentRecipie
 function scenarioModel(){
   var r=S.scenarioResult,loading=S.scenarioLoading,tc={base:'var(--g)',tax:'var(--a)',benefit:'var(--pu)'};
   return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
-  +'<div class="ph"><div style="display:flex;align-items:center;gap:7px;margin-bottom:2px"><span class="badge-ai">✦ AI</span><button class="bk" onclick="go(\'home\')" style="margin-left:auto">✕</button></div><div class="pt">Scenario model</div><div class="ps">Tag: 7c</div></div>'
+  +'<div class="ph"><div style="display:flex;align-items:center;gap:7px;margin-bottom:2px"><span class="badge-ai">✦ AI</span><button class="bk" onclick="go(\'home\')" style="margin-left:auto">✕</button></div><div class="pt">Scenario model</div></div>'
   +'<div style="padding:13px 18px 24px;display:flex;flex-direction:column;gap:10px">'
   +'<div style="display:flex;background:#fff;border-radius:10px;padding:3px;border:1px solid var(--bd)">'
   +[['whatif','What-if'],['target','Budget target']].map(function(m){
@@ -2023,7 +2023,7 @@ function bankBalance(){
   var buffer=BANK.balance-BANK.upcomingDebit;
   var sufficient=buffer>=0;
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('home','Bank balance','Tag: 8a')
+  +subHeader('home','Bank balance')
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
   +'<div>'
   +'<div class="sl">'+(sufficient?'Left over after '+TOTALS.payDate.split(',')[0]+' payroll':'Shortfall for '+TOTALS.payDate.split(',')[0]+' payroll')+'</div>'
@@ -2052,7 +2052,7 @@ function settings(){
     ['security','Security','2FA on'],
   ];
   return '<div style="background:var(--bg);flex:1;display:flex;flex-direction:column">'
-  +'<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd)"><div class="pt">Settings</div><div class="ps">Tag: 9a</div></div>'
+  +'<div style="padding:13px 19px 11px;background:#fff;border-bottom:1px solid var(--bd)"><div class="pt">Settings</div></div>'
   +'<div style="padding:13px 18px;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto">'
   +'<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)">'
   +items.map(function(it,i){
@@ -2090,7 +2090,7 @@ function settingsDetail(){
     }).join('')+'</div>';
   }
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('settings',c.title,'Tag: 9b')
+  +subHeader('settings',c.title)
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px">'
   +body
   +'</div>'
@@ -2159,7 +2159,7 @@ function payHistoryDetail(){
   +'</div>';
 
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="S.homeTab=\'past\';go(\'home\')">←</button><div><div class="pt">'+p.date+' payroll</div><div class="ps">'+p.label+', 2026 · Tag: 11b</div></div></div>'
+  +'<div class="ph" style="display:flex;align-items:center;gap:10px"><button class="bk" onclick="S.homeTab=\'past\';go(\'home\')">←</button><div><div class="pt">'+p.date+' payroll</div><div class="ps">'+p.label+', 2026</div></div></div>'
   +'<div style="flex:1;min-height:0;overflow-y:auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:12px">'
   // Totals block (gross / taxes / deductions / net)
   +'<div style="background:#F3F4F6;border-radius:12px;padding:13px 15px">'
@@ -2274,7 +2274,7 @@ function automation(){
   }).join('');
 
   return '<div style="background:var(--bg);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden">'
-  +subHeader('settings','Automation level','Tag: 9c')
+  +subHeader('settings','Automation level')
   +'<div style="flex:1;min-height:0;overflow-y:auto">'
     +'<div style="background:#fff;padding:20px 20px 18px;border-bottom:1px solid rgba(0,0,0,.06)">'
     +'<div style="font-size:20px;font-weight:800;color:var(--t1);letter-spacing:-.02em;line-height:1.25;margin-bottom:8px">How much should Paylocity handle on its own?</div>'
